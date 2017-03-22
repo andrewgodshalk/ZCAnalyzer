@@ -143,12 +143,15 @@ bool NtupleProcessor::initializeConfig()
   // specified in the NP config
     logger_.debug("initializeConfig(): Getting config file {}", cfgFileName_);
   // Load NP config file.
-    procCfg_       = cfgLocator_.getConfig(cfgFileName_);
-    configPath_    =                            procCfg_->get<string>("config_dir");
-    ntupleCfgName_ = configPath_ + "ntuple/"  + procCfg_->get<string>("ntuple"    );
-    dsCfgName_     = configPath_ + "dataset/" + procCfg_->get<string>("dataset"   );
-    ntupleCfg_     = cfgLocator_.getConfig(ntupleCfgName_);
-    datasetCfg_    = cfgLocator_.getConfig(dsCfgName_    );
+    procCfg_             = cfgLocator_.getConfig(cfgFileName_);
+    configPath_          =                             procCfg_->get<string>("config_dir");
+    ntupleCfgName_       = configPath_ + "ntuple/"   + procCfg_->get<string>("ntuple"    );
+    dsCfgName_           = configPath_ + "dataset/"  + procCfg_->get<string>("dataset"   );
+    eventMapCfgName_     = configPath_ + "eventmap/" + procCfg_->get<string>("eventmap"  );
+    ntupleCfg_           = cfgLocator_.getConfig(ntupleCfgName_);
+    datasetCfg_          = cfgLocator_.getConfig(dsCfgName_    );
+  // Set up global instance of event map configuration.
+    eventMapInstanceCfg_ = cfgLocator_.setConfig("current_event_map", eventMapCfgName_);
     return true;
 }
 
@@ -195,7 +198,7 @@ bool NtupleProcessor::initializeNtuple()
     ntupleInfo["tree_entries"] = to_string(treeEntries);
 
   // Store the mapped information in a config file for this NP instance. Get a pointer to it for later.
-    ntupleInstanceInfo_ = cfgLocator_.setConfig("current_ntuple_info", ntupleInfo);
+    ntupleInstanceCfg_ = cfgLocator_.setConfig("current_ntuple_info", ntupleInfo);
 
     return true;
 }

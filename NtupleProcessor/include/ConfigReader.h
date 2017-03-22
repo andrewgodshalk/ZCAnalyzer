@@ -69,6 +69,12 @@ class ConfigReader {
         }
     }
 
+    // Functions passed on from property tree
+    boost::property_tree::ptree::const_iterator begin() const {return pt.begin();}
+    boost::property_tree::ptree::const_iterator end()   const {return pt.end();  }
+    // boost::property_tree::ptree::const_iterator find(std::string key) const { return pt.find(key.c_str()); }
+    const boost::property_tree::ptree infoTree() const {return pt;}
+
   protected:
     std::shared_ptr<ConfigReader> base_ ;  // Base config that this config modifies.
         // Refers to this pointer for values that aren't stored in this config.

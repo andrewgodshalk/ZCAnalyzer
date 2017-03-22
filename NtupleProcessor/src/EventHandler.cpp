@@ -22,8 +22,15 @@ void EventHandler::mapTree(TTree* tree)
 
 void EventHandler::evaluateEvent()
 { // Use tree map to set up physics objects
-    // logger_.trace("evaluateEvent(): called");
-    logger_.trace("evaluateEvent(): Vtype = {}", evtMap_->Vtype_);
+    logger_.trace("evaluateEvent(): called");
+    logger_.trace("evaluateEvent(): Vtype     = {}", evtMap_->mf_["Vtype"]);
+    logger_.trace("evaluateEvent(): nvLeptons = {}", evtMap_->mi_["nvLeptons"]);
+    if(evtMap_->mi_["nvLeptons"] > 0)
+    {
+        logger_.trace("evaluateEvent(): vLeptons_pt    [0] = {}", evtMap_->mfa_["vLeptons_pt"    ][0]);
+        logger_.trace("evaluateEvent(): vLeptons_charge[0] = {}", evtMap_->mia_["vLeptons_charge"][0]);
+    }
+
 
   // Reset working variables.
     resetEventVariables();

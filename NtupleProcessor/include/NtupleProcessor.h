@@ -9,6 +9,10 @@
  Main class of NtupleProcessor program. Created to coordinate configuration and
  classes used in analyzing root ntuples.
 
+GLOBAL CONFIGS SET BY THIS CLASS:
+- current_ntuple_info - contains info on the ntuple currently being processed.
+- current_event_map   - variables and types to be mapped from ttree.
+
 ------------------------------------------------------------------------------*/
 #include <exception>
 #include <string>
@@ -60,14 +64,16 @@ class NtupleProcessor
     TimeStamp     endTime_   ;
 
     // Configuration info
-    ConfigLocator cfgLocator_    ;
-    std::string   configPath_     ;
-    std::string   ntupleCfgName_ ;
-    std::string   dsCfgName_     ;
+    ConfigLocator cfgLocator_      ;
+    std::string   configPath_      ;
+    std::string   ntupleCfgName_   ;
+    std::string   dsCfgName_       ;
+    std::string   eventMapCfgName_ ;
     std::shared_ptr<ConfigReader> procCfg_   ;
     std::shared_ptr<ConfigReader> ntupleCfg_ ;
     std::shared_ptr<ConfigReader> datasetCfg_;
-    std::shared_ptr<ConfigReader> ntupleInstanceInfo_;  // Config file containing
+    std::shared_ptr<ConfigReader> eventMapInstanceCfg_;
+    std::shared_ptr<ConfigReader> ntupleInstanceCfg_  ;  // Config file containing
       // all information important for this instance of NtupleProcessor, including
       // information drawn from ntuple and dataset config files.
 
