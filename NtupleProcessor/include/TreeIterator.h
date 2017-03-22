@@ -24,7 +24,7 @@
 #include <TTree.h>
 #include <TSelector.h>
 // Project Specific classes
-// #include "EventHandler.h"
+#include "EventHandler.h"
 // #include "HistogramExtractor.h"
 #include "Logger.h"
 
@@ -66,7 +66,7 @@ class TreeIterator : public TSelector
 
   private:
     TTree *fChain;
-    // EventHandler* evt_;
+    EventHandler* evt_;
     // std::vector<HistogramExtractor*> hExtractors_;
 
   // Internal counters

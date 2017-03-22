@@ -24,7 +24,7 @@ TreeIterator::TreeIterator(/*std::vector<HistogramExtractor*>& vHE*/)
     nEntriesProcessed_(0), logger_("NtupleProcessor", "[TI]", 1)
 {
     logger_.debug("TreeIterator Created.");
-    // evt_ = new EventHandler();
+    evt_ = new EventHandler();
 
   // Set up histogram extractors
     // for( HistogramExtractor* h: hExtractors_ ) h->setEventHandler(evt_);
@@ -55,7 +55,7 @@ void TreeIterator::Init(TTree *tree)
     logger_.info("Processing New Tree (# Entries: {})", nEntries_);
 
   // Initialize Event Handler, adding the criteria of each HistoMaker to it's list of criteria.
-    // evt_->mapTree(fChain);
+    evt_->mapTree(fChain);
 }
 
 Bool_t TreeIterator::Notify()
@@ -73,7 +73,7 @@ Bool_t TreeIterator::Process(Long64_t entry)
     if(nEntriesProcessed_%100000 == 0 || nEntriesProcessed_==finalEntry_) cout << "  " << nEntriesProcessed_ << endl;
 
   // Evaluate selection profiles.
-    // evt_->evaluateEvent();
+    evt_->evaluateEvent();
 
   // Call each HistogramExtractors
     // for( HistogramExtractor* h: hExtractors_ ) h->process();
