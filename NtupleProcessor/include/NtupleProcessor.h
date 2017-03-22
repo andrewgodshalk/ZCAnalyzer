@@ -34,6 +34,8 @@ class NtupleProcessor
   private:
     // Main work methods - breakdown of the main processes of the class.
     bool processCommandLineInput(int, char*[]);  // Processes command line options/flags.
+    bool initializeConfig();
+    bool initializeNtuple();
     void processNtuple();   // Sets tree iterator in motion over input ntuple.
 
     // Helper methods
@@ -41,22 +43,33 @@ class NtupleProcessor
       // Function that asks the user a yes or no question.
 
     // Command Line Input
+    std::string ntupleLabel_    ;
+    std::string cfgFileName_    ;
     bool logQuiet_              ;
     bool logDebug_              ;
     counter eventsToProcess_    ;
     counter firstEventToProcess_;
     std::string options_        ;
 
-    // File Information
-    // std::string ntupleName_;
-    // std::vector<std::string> ntupleFileNames_;
-    // TTree*       ntuples_;
-    TreeIterator* tIter_;
-
     // Processing information
-    Logger    logger_   ;
-    TimeStamp beginTime_;
-    TimeStamp endTime_  ;
+    TFile* ntupleFile_       ;
+    TTree* ntupleTree_       ;  // File and tree where ntuple is stored.
+    TreeIterator* tIter_     ;
+    Logger        logger_    ;
+    TimeStamp     beginTime_ ;
+    TimeStamp     endTime_   ;
+
+    // Configuration info
+    ConfigLocator cfgLocator_    ;
+    std::string   configPath_     ;
+    std::string   ntupleCfgName_ ;
+    std::string   dsCfgName_     ;
+    std::shared_ptr<ConfigReader> procCfg_   ;
+    std::shared_ptr<ConfigReader> ntupleCfg_ ;
+    std::shared_ptr<ConfigReader> datasetCfg_;
+    std::shared_ptr<ConfigReader> ntupleInstanceInfo_;  // Config file containing
+      // all information important for this instance of NtupleProcessor, including
+      // information drawn from ntuple and dataset config files.
 
     // std::vector<HistogramExtractor*> hExtractors_;
 };

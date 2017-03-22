@@ -12,6 +12,7 @@ TreeIterator.cpp
 
 #include <iostream>
 #include "TreeIterator.h"
+// #include "ConfigReader.h"
 
 using std::string;
 using std::cout;
@@ -70,8 +71,14 @@ Bool_t TreeIterator::Process(Long64_t entry)
   // Load current entry
     fChain->GetTree()->GetEntry(entry);
 
+  // TEST: SEE IF CONFIG LOCATOR WORKS
+    // ConfigLocator cfgLocator;
+    // int entriesFromConfig = cfgLocator.getConfig("current_ntuple_info")->get<int>("tree_entries");
+    // int entriesFromConfig = ConfigLocator::getConfig("current_ntuple_info")->get<int>("tree_entries");
+
   // Set up status outputs
     if(nEntriesProcessed_%100000 == 0 || nEntriesProcessed_==finalEntry_) cout << "  " << nEntriesProcessed_ << endl;
+    // if(nEntriesProcessed_%100000 == 0 || nEntriesProcessed_==finalEntry_) cout << "  " << nEntriesProcessed_ << " of " << entriesFromConfig << endl;
 
   // Evaluate selection profiles.
     // evt_->evaluateEvent();

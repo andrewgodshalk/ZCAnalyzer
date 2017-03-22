@@ -6,6 +6,7 @@ NtupleProcessor.cpp
 
 // Standard Libraries
 #include <iostream>
+#include <map>
 #include <memory>
 #include <vector>
 #include <sys/types.h>
@@ -16,15 +17,17 @@ NtupleProcessor.cpp
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 // ROOT Libraries
-#include "TROOT.h"
-#include "TApplication.h"
-#include "TRint.h"
+#include "TH1F.h"
+// #include "TROOT.h"
+// #include "TApplication.h"
+// #include "TRint.h"
 // Project Specific classes
 #include "NtupleProcessor.h"
 
-using std::endl;   using std::vector;
-using std::cout;   using std::string;
-using std::cin ;
+using std::endl;   using std::vector    ;
+using std::cout;   using std::string    ;
+using std::cin ;   using std::shared_ptr;
+using std::map ;   using std::to_string ;
 typedef unsigned long counter;
 namespace po = boost::program_options;
 
@@ -42,7 +45,10 @@ int main(int argc, char* argv[])
 }
 
 NtupleProcessor::NtupleProcessor(int argc, char* argv[])
-  : logQuiet_(false), logDebug_(false), eventsToProcess_(-1), firstEventToProcess_(0), options_(""), logger_("NtupleProcessor", "[NP]", 0)
+  : ntupleLabel_(""), cfgFileName_("ZClibrary/config/ntupleprocessor/default.ini"),
+    logQuiet_(false), logDebug_(false),
+    eventsToProcess_(-1), firstEventToProcess_(0), options_(""),
+    logger_("NtupleProcessor", "[NP]", 0)
 { // Class initialization
     beginTime_.update();  // Set begin time.
     if(!processCommandLineInput(argc, argv)) throw("help"); // Process command line input. Throw error if unsucessful.
@@ -54,20 +60,18 @@ NtupleProcessor::NtupleProcessor(int argc, char* argv[])
     logger_.debug("NtupleProcessor Created.");
 
   // Initialize Helper Classes, histogram makers, ntuples.
-    // initializeNtuples();
     // initializeHistogramExtractors();
     // tIter_ = new TreeIterator(hExtractors_);
+    if( !initializeConfig() || !initializeNtuple() ) throw("help");
     tIter_ = new TreeIterator();
-    logger_.info("NtupleProcessor initizated {}", beginTime_.log_str());
-    if(eventsToProcess_>0) logger_.info("Number of events to process: {}", eventsToProcess_);
 
   // TEMP TEST: Initialize and extract values from a ConfigReader.
-    string fn_cfg = "/home/godshalk/Work/2017-03_ZCAnalyzer/ZCLibrary/config/ntupleprocessor/default.ini";
-    ConfigReader* cfg = new ConfigReader(fn_cfg);
-    logger_.debug("From cfg: test_line = {}", cfg->get<string>("test_line"));
-    string ntupleFile; cfg->get("ntuple", ntupleFile);
-    logger_.debug("From cfg: ntuple = {}", ntupleFile);
-    logger_.debug("From cfg: LISTINGTHATISNOTTHERE = {}", cfg->get<string>("LISTINGTHATISNOTTHERE"));
+    // string fn_cfg = "/home/godshalk/Work/2017-03_ZCAnalyzer/ZCLibrary/config/ntupleprocessor/cujo.ini";
+    // ConfigReader* cfg = new ConfigReader(fn_cfg);
+    // logger_.debug("From cfg: test_line = {}", cfg->get<string>("test_line"));
+    // string ntupleFile; cfg->get("ntuple", ntupleFile);
+    // logger_.debug("From cfg: ntuple = {}", ntupleFile);
+    // logger_.debug("From cfg: LISTINGTHATISNOTTHERE = {}", cfg->get<string>("LISTINGTHATISNOTTHERE"));
 
     logger_.info("NtupleProcessor initizated {}", beginTime_.log_str());
     if(eventsToProcess_>0) logger_.info("Number of events to process: {}", eventsToProcess_);
@@ -94,12 +98,14 @@ bool NtupleProcessor::processCommandLineInput(int argc, char* argv[])
   // Set up options
     po::options_description opDesc("NtupleProcessor options", 150);
     opDesc.add_options()
-        ("help"      ",h",                                                             "Print help message"                                   )
-        ("debug"     ",d",                                                             "Increased output for debugging purposes."             )
-        ("quiet"     ",q",                                                             "Minimal console output. Output still logged in file." )
-        ("maxevents" ",m",  po::value<int>()   ->default_value(eventsToProcess_     ), "Number of events to process"                          )
-        ("firstevent"",f",  po::value<int>()   ->default_value(firstEventToProcess_ ), "Number of events to process"                          )
-        ("options"   ",o",  po::value<string>()->default_value(options_             ), "Misc. options"                                        )
+        ("help"      ",h",                                                             "Print help message"                                         )
+        ("config"    ",c",  po::value<string>()->default_value(cfgFileName_         ), "Config file to use (from ZCLibrary/config/ntupleprocessor/)")
+        ("ntuple"    ",n",  po::value<string>()->default_value(ntupleLabel_         ), "Ntuple to process (from cfg in ZCLibrary/config/ntuple/)"   )
+        ("maxevents" ",m",  po::value<int>()   ->default_value(eventsToProcess_     ), "Number of events to process"                                )
+        ("firstevent"",f",  po::value<int>()   ->default_value(firstEventToProcess_ ), "Number of events to process"                                )
+        ("debug"     ",d",                                                             "Increased output for debugging purposes."                   )
+        ("quiet"     ",q",                                                             "Minimal console output. Output still logged in file."       )
+        ("options"   ",o",  po::value<string>()->default_value(options_             ), "Misc. options"                                              )
     ;
     po::variables_map cmdInput;
     po::store(po::parse_command_line(argc, argv, opDesc), cmdInput);
@@ -108,10 +114,12 @@ bool NtupleProcessor::processCommandLineInput(int argc, char* argv[])
     {   cout << "\n" << opDesc << endl; return false; }
 
   // Extract and store variables.
+    cfgFileName_         = ( cmdInput.count("config") ? cmdInput["config"].as<string>() : "ZClibrary/config/ntupleprocessor/default.ini");
+    ntupleLabel_         = ( cmdInput.count("ntuple") ? cmdInput["ntuple"].as<string>() : "");
     logDebug_            =   cmdInput.count("debug");
     logQuiet_            =   cmdInput.count("quiet");
     eventsToProcess_     = ( cmdInput.count("maxevents" ) ? cmdInput["maxevents" ].as<int>() : -1);
-    firstEventToProcess_ = ( cmdInput.count("firstevent") ? cmdInput["firstevent"].as<int>() : -1);
+    firstEventToProcess_ = ( cmdInput.count("firstevent") ? cmdInput["firstevent"].as<int>() :  0);
 
   // Log files will be huge if debug and no max event setting are set. Give a warning.
     if(logDebug_ && eventsToProcess_ > 1000 )
@@ -130,6 +138,68 @@ bool NtupleProcessor::processCommandLineInput(int argc, char* argv[])
     return true;
 }
 
+bool NtupleProcessor::initializeConfig()
+{ // Loads main NP config from command line input, as well as other configs
+  // specified in the NP config
+    logger_.debug("initializeConfig(): Getting config file {}", cfgFileName_);
+  // Load NP config file.
+    procCfg_       = cfgLocator_.getConfig(cfgFileName_);
+    configPath_    =                            procCfg_->get<string>("config_dir");
+    ntupleCfgName_ = configPath_ + "ntuple/"  + procCfg_->get<string>("ntuple"    );
+    dsCfgName_     = configPath_ + "dataset/" + procCfg_->get<string>("dataset"   );
+    ntupleCfg_     = cfgLocator_.getConfig(ntupleCfgName_);
+    datasetCfg_    = cfgLocator_.getConfig(dsCfgName_    );
+    return true;
+}
+
+
+bool NtupleProcessor::initializeNtuple()
+{ // Function sets up an ntuple from the input ntuple label.
+  // Returns false if the ntuple is not found in the given configuration files.
+    logger_.debug("initializeNtuple(): Getting config file {}", ntupleCfgName_);
+
+  // Extract ntuple information from ntuple config file.
+    string ntuplePath    = ntupleCfg_->get<string>("ntuple_path" );
+    string rawNtupleInfo = ntupleCfg_->get<string>( ntupleLabel_ );
+    logger_.debug("initializeNtuple(): from ntuple cfg for label {}: {}", ntupleLabel_, rawNtupleInfo);
+    if(rawNtupleInfo == "")
+    {   logger_.error("No information for {} stored in ntuple config file {}", ntupleLabel_, ntupleCfgName_);
+        return false;
+    }
+    vector<string> splitInfo;   ConfigReader::getListFromString(rawNtupleInfo, splitInfo);
+    // Info has format in file: <label> = <dataset> <dataset_property_list> <filename>
+
+  // Add information for ntuple to a map by iterating through split list.
+    map<string, string> ntupleInfo;
+    ntupleInfo["label"     ] = ntupleLabel_;
+    auto nInfo = splitInfo.begin();
+    ntupleInfo["dataset"   ] = *nInfo++;
+    ntupleInfo["properties"] = *nInfo++;
+    while(nInfo != splitInfo.end()-1)
+        ntupleInfo["properties"] += " " + *nInfo++;
+    ntupleInfo["filename"  ] = ntuplePath + '/' + *nInfo++;
+
+  // Use extracted info on file to open the root file
+    ntupleFile_ = TFile::Open(ntupleInfo["filename"].c_str());
+
+  // Extract tree pointer and count info from file.
+    ntupleTree_ = (TTree*) ntupleFile_->Get("tree");
+    int posCounts = ((TH1F*) ntupleFile_->Get("CountPosWeight"))->GetBinContent(1);
+    int negCounts = ((TH1F*) ntupleFile_->Get("CountNegWeight"))->GetBinContent(1);
+    int absCounts = ((TH1F*) ntupleFile_->Get("Count"         ))->GetBinContent(1);
+    int treeEntries = ntupleTree_->GetEntries();
+    ntupleInfo["abs_counts"  ] = to_string(absCounts);
+    ntupleInfo["pos_counts"  ] = to_string(posCounts);
+    ntupleInfo["neg_counts"  ] = to_string(negCounts);
+    ntupleInfo["net_counts"  ] = to_string(posCounts-negCounts);
+    ntupleInfo["tree_entries"] = to_string(treeEntries);
+
+  // Store the mapped information in a config file for this NP instance. Get a pointer to it for later.
+    ntupleInstanceInfo_ = cfgLocator_.setConfig("current_ntuple_info", ntupleInfo);
+
+    return true;
+}
+
 void NtupleProcessor::processNtuple()
 { // Takes the input ntuple and calls the tree iterator over it.
     logger_.trace("processNtuple() called.");
@@ -137,17 +207,8 @@ void NtupleProcessor::processNtuple()
     logger_.info("================================================================================");
     logger_.info("===Beginning Event Processing===");
 
-    // TEMP TEST: Open hard-coded file, run over tree.
-    string fn = "file:///home/godshalk/Work/2017-02-27_SampleNtuplesRR/MC_SUMMER2016_PRIMARY_DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-Py8__RunIISummer16MAv2-PUMoriond17_80r2as_2016_TrancheIV_v6_ext2-v1_52of53.root";
-    TFile* f = TFile::Open(fn.c_str());
-    // if(!f->IsOpen()) logger_.debug("File not open: {}", fn);
-    // logger_.debug("Opening file: {}", f->GetName());
-
-    TTree* tree = (TTree*) f->Get("tree");
-    // logger_.debug("Opening tree: {}", tree->GetTitle());
-
-    if( eventsToProcess_ > 0 || firstEventToProcess_ > 0 ) tree->Process(tIter_, "", eventsToProcess_, firstEventToProcess_);
-    else tree->Process(tIter_);
+    if( eventsToProcess_ > 0 || firstEventToProcess_ > 0 ) ntupleTree_->Process(tIter_, "", eventsToProcess_, firstEventToProcess_);
+    else ntupleTree_->Process(tIter_);
 
     logger_.info("");
     logger_.info("===End Event Processing===");
