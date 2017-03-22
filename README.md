@@ -1,4 +1,4 @@
-# [ZCRunII][ZCRunII github]
+# [ZCAnalyzer][ZCAnalyzer github]
 
 A number of programs used for the analysis of data collected by the [Compact Muon Solenoid experiment][CMS] at the [LHC][LHC]. These analyses are used to study the cross section of a Z boson created in association with a c-quark jet.
 
@@ -14,7 +14,6 @@ Project created from template by [Hiltmon][Simple C++ Project Structure].
 
 Fetch submodules:
 
-    cd ~/.vim
     git submodule init
     git submodule update
 
@@ -58,5 +57,5 @@ Graduate Student, SUNY at Buffalo
 [Andrew email]:andrewgodshalk@gmail.com
 [Andrew website]:http://www.acsu.buffalo.edu/~godshalk/
 [Z+c RunI Twiki]:https://twiki.cern.ch/twiki/bin/viewauth/CMS/ZplusHF8TeV
-[ZCRunII github]:https://github.com/andrewgodshalk/ZCRunII
+[ZCAnalyzer github]:https://github.com/andrewgodshalk/ZCAnalyzer
 [NtupleProcessor github]:https://github.com/andrewgodshalk/ZCRunII/tree/master/NtupleProcessor
