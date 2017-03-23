@@ -22,15 +22,14 @@ void EventHandler::mapTree(TTree* tree)
 
 void EventHandler::evaluateEvent()
 { // Use tree map to set up physics objects
+    logger_.trace("");
     logger_.trace("evaluateEvent(): called");
-    logger_.trace("evaluateEvent(): Vtype     = {}", evtMap_->mf_["Vtype"]);
-    logger_.trace("evaluateEvent(): nvLeptons = {}", evtMap_->mi_["nvLeptons"]);
-    if(evtMap_->mi_["nvLeptons"] > 0)
-    {
-        logger_.trace("evaluateEvent(): vLeptons_pt    [0] = {}", evtMap_->mfa_["vLeptons_pt"    ][0]);
-        logger_.trace("evaluateEvent(): vLeptons_charge[0] = {}", evtMap_->mia_["vLeptons_charge"][0]);
-    }
+    logger_.trace("evaluateEvent(): Vtype     = {}", evtMap_->get("Vtype"    ));
+    logger_.trace("evaluateEvent(): nvLeptons = {}", evtMap_->get("nvLeptons"));
+    logger_.trace("evaluateEvent(): naLeptons = {}", evtMap_->get("naLeptons"));
 
+    for(int i=0; i < evtMap_->get("nvLeptons"); i++) logger_.trace("evaluateEvent(): lepton v{}: id {}, pt {}", i, evtMap_->get("vLeptons_pdgId", i), evtMap_->get("vLeptons_pt", i));
+    for(int i=0; i < evtMap_->get("naLeptons"); i++) logger_.trace("evaluateEvent(): lepton a{}: id {}, pt {}", i, evtMap_->get("aLeptons_pdgId", i), evtMap_->get("aLeptons_pt", i));
 
   // Reset working variables.
     resetEventVariables();

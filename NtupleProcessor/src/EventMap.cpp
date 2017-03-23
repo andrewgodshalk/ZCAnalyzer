@@ -10,6 +10,8 @@ EventMap.cpp
 #include <iostream>
 #include <string>
 #include <vector>
+// ROOT Classes
+#include <TObjArray.h>
 // Project Specific
 #include "EventMap.h"
 
@@ -34,14 +36,38 @@ void EventMap::mapTree(TTree* tree)
   // Deactivate all branches by default
     tree->SetBranchStatus("*",0);
 
+  // Retrieve list of branches from ntuple TTree to check for existence.
+    TObjArray* branchList = tree->GetListOfBranches();
+
   // For each branch in the config file...
     auto branches = evtMapList_->infoTree();
     for( auto& branch_type : branches)
-    {   logger_.debug("mapTree(): activating, mapping {} of type {}", branch_type.first, branch_type.second.data());
+    {   if(branchList->FindObject(branch_type.first.c_str()) == NULL)
+        {   logger_.debug("mapTree(): BRANCH NOT FOUND IN NTUPLE: {} of type {}", branch_type.first, branch_type.second.data());
+            continue;
+        }
+        logger_.debug("mapTree(): activating, mapping {} of type {}", branch_type.first, branch_type.second.data());
         tree->SetBranchStatus(branch_type.first.c_str(), 1);
         if(branch_type.second.data() == "Float_t"  ) tree->SetBranchAddress( branch_type.first.c_str(), &mf_[branch_type.first]);
         if(branch_type.second.data() ==   "Int_t"  ) tree->SetBranchAddress( branch_type.first.c_str(), &mi_[branch_type.first]);
         if(branch_type.second.data() == "Float_t[]") tree->SetBranchAddress( branch_type.first.c_str(), mfa_[branch_type.first]);
         if(branch_type.second.data() ==   "Int_t[]") tree->SetBranchAddress( branch_type.first.c_str(), mia_[branch_type.first]);
     }
+}
+
+float EventMap::get(string key)
+{ // Look-up a map value. Return float-cast value.
+    if(mf_.find(key)!=mf_.end()) return mf_.at(key);
+    if(mi_.find(key)!=mi_.end()) return mi_.at(key);
+    logger_.error("get(): branch \"{}\" not mapped. Returning -1000.", key);
+    return -1000;
+}
+
+// Lookup for a mapped value on an array. Return float-cast value.
+float EventMap::get(string key, unsigned int i)
+{ // Look-up a map value. Return float-cast value.
+    if(mfa_.find(key)!=mfa_.end()) return mfa_.at(key)[i];
+    if(mia_.find(key)!=mia_.end()) return mia_.at(key)[i];
+    logger_.error("get(): branch \"{}\" not mapped. Returning -1000.", key);
+    return -1000;
 }

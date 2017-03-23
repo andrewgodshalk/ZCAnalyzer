@@ -33,6 +33,9 @@ class EventMap
 
     void mapTree(TTree*);
 
+    float get(std::string);
+    float get(std::string, unsigned int);
+
     // Map variables
     std::map<std::string, float               > mf_ ;
     std::map<std::string, int                 > mi_ ;
