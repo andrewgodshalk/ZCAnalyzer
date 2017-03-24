@@ -13,21 +13,20 @@ TreeIterator.cpp
 #include <iostream>
 #include "TreeIterator.h"
 
-using std::string;
 using std::cout;
 using std::endl;
+using std::string;
+using std::vector;
 
-TreeIterator::TreeIterator(/*std::vector<HistogramExtractor*>& vHE*/)
-  : fChain(0),
-    // hExtractors_(vHE),
+TreeIterator::TreeIterator(vector<HistogramExtractor*>& vHE)
+  : fChain(0), hExtractors_(vHE),
     nEntries_(0), finalEntry_(0),
     nEntriesProcessed_(0), logger_("NtupleProcessor", "[TI]", 1)
 {
     logger_.debug("TreeIterator Created.");
+  // Initialize EH and pass to HEs
     evt_ = new EventHandler();
-
-  // Set up histogram extractors
-    // for( HistogramExtractor* h: hExtractors_ ) h->setEventHandler(evt_);
+    for( HistogramExtractor* h: hExtractors_ ) h->setEventHandler(evt_);
 }
 
 void TreeIterator::Begin(TTree * /*tree*/){}
@@ -76,7 +75,7 @@ Bool_t TreeIterator::Process(Long64_t entry)
     evt_->evaluateEvent();
 
   // Call each HistogramExtractors
-    // for( HistogramExtractor* h: hExtractors_ ) h->process();
+    for( HistogramExtractor* h: hExtractors_ ) h->process();
 
     nEntriesProcessed_++;
     return true;
@@ -84,7 +83,7 @@ Bool_t TreeIterator::Process(Long64_t entry)
 
 void TreeIterator::SlaveTerminate()
 {
-  //  for( HistogramExtractor* h: hExtractors_ ) h->terminate();
+    // for( HistogramExtractor* h: hExtractors_ ) h->terminate();
 }
 
 void TreeIterator::Terminate(){}

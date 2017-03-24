@@ -25,7 +25,7 @@
 #include <TSelector.h>
 // Project Specific classes
 #include "EventHandler.h"
-// #include "HistogramExtractor.h"
+#include "HistogramExtractor.h"
 #include "Logger.h"
 
 typedef unsigned long counter;
@@ -33,8 +33,8 @@ typedef unsigned long counter;
 class TreeIterator : public TSelector
 {
   public:
-    // TreeIterator(std::vector<HistogramExtractor*>&);
-    TreeIterator();
+    TreeIterator(std::vector<HistogramExtractor*>&);
+    // TreeIterator();
     virtual ~TreeIterator(){}
 
   // Overloaded TSelector Functions
@@ -67,7 +67,7 @@ class TreeIterator : public TSelector
   private:
     TTree *fChain;
     EventHandler* evt_;
-    // std::vector<HistogramExtractor*> hExtractors_;
+    std::vector<HistogramExtractor*> hExtractors_;
 
   // Internal counters
     counter nEntries_;            // Total number of entries in chain

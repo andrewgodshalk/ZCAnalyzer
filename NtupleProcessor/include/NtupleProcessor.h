@@ -21,8 +21,8 @@ GLOBAL CONFIGS SET BY THIS CLASS:
 #include "TFile.h"
 #include "TTree.h"
 // Project Specific classes
-// #include "ConfigLocator.h"
 #include "ConfigReader.h"
+#include "HistogramExtractor.h"
 #include "Logger.h"
 #include "TimeStamp.h"
 #include "TreeIterator.h"
@@ -40,6 +40,7 @@ class NtupleProcessor
     bool processCommandLineInput(int, char*[]);  // Processes command line options/flags.
     bool initializeConfig();
     bool initializeNtuple();
+    bool initializeHistogramExtractors();
     void processNtuple();   // Sets tree iterator in motion over input ntuple.
 
     // Helper methods
@@ -77,7 +78,7 @@ class NtupleProcessor
       // all information important for this instance of NtupleProcessor, including
       // information drawn from ntuple and dataset config files.
 
-    // std::vector<HistogramExtractor*> hExtractors_;
+    std::vector<HistogramExtractor*> hExtractors_;
 };
 
 #endif

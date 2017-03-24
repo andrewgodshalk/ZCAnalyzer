@@ -13,6 +13,9 @@
 ------------------------------------------------------------------------------*/
 
 // Standard Libraries
+#include <map>
+#include <string>
+
 // Root Classes
 #include <TTree.h>
 // Project Specific classes
@@ -25,15 +28,22 @@ class EventHandler
     EventHandler();
     ~EventHandler(){}
 
-    void mapTree(TTree*);
+    float get(std::string, int i=-1);
+      // Intermediary function between EH and EM to pass mapped values out of class.
 
+    void mapTree(TTree*);
     void evaluateEvent();
-    EventMap* evtMap_;
 
   private:
-    Logger logger_;
+  // Event variables, mapped and calculated.
+    EventMap* evtMap_;
+    std::map<std::string, float*> calculatedVars_;
+        // Variables calcualted per event. Added to event map and kept track of
+        // here so that they can be reset each event.
 
     void resetEventVariables();
+
+    Logger logger_;
 
 };
 

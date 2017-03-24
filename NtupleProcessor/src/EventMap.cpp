@@ -19,8 +19,8 @@ using std::map;
 using std::string;
 using std::vector;
 
-EventMap::EventMap() :
-  logger_("NtupleProcessor", "[EM]   ")
+EventMap::EventMap()
+  : logger_("NtupleProcessor", "[EM]", 2)
 {
     logger_.debug("EventMap Created.");
 }

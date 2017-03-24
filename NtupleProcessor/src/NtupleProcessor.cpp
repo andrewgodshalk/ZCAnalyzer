@@ -18,11 +18,9 @@ NtupleProcessor.cpp
 #include <boost/program_options/variables_map.hpp>
 // ROOT Libraries
 #include "TH1F.h"
-// #include "TROOT.h"
-// #include "TApplication.h"
-// #include "TRint.h"
 // Project Specific classes
 #include "NtupleProcessor.h"
+#include "CutFlowTable.h"
 
 using std::endl;   using std::vector    ;
 using std::cout;   using std::string    ;
@@ -60,18 +58,8 @@ NtupleProcessor::NtupleProcessor(int argc, char* argv[])
     logger_.debug("NtupleProcessor Created.");
 
   // Initialize Helper Classes, histogram makers, ntuples.
-    // initializeHistogramExtractors();
-    // tIter_ = new TreeIterator(hExtractors_);
-    if( !initializeConfig() || !initializeNtuple() ) throw("help");
-    tIter_ = new TreeIterator();
-
-  // TEMP TEST: Initialize and extract values from a ConfigReader.
-    // string fn_cfg = "/home/godshalk/Work/2017-03_ZCAnalyzer/ZCLibrary/config/ntupleprocessor/cujo.ini";
-    // ConfigReader* cfg = new ConfigReader(fn_cfg);
-    // logger_.debug("From cfg: test_line = {}", cfg->get<string>("test_line"));
-    // string ntupleFile; cfg->get("ntuple", ntupleFile);
-    // logger_.debug("From cfg: ntuple = {}", ntupleFile);
-    // logger_.debug("From cfg: LISTINGTHATISNOTTHERE = {}", cfg->get<string>("LISTINGTHATISNOTTHERE"));
+    if( !initializeConfig() || !initializeNtuple() || !initializeHistogramExtractors() ) throw("help");
+    tIter_ = new TreeIterator(hExtractors_);
 
     logger_.info("NtupleProcessor initizated {}", beginTime_.log_str());
     if(eventsToProcess_>0) logger_.info("Number of events to process: {}", eventsToProcess_);
@@ -81,7 +69,7 @@ NtupleProcessor::NtupleProcessor(int argc, char* argv[])
 
   // Terminate histogram extractors and print closing output.
     logger_.info("");
-    // for( HistogramExtractor* h: hExtractors_ ) h->terminate();
+    for( HistogramExtractor* h: hExtractors_ ) h->terminate();
 
   // Print closing output.
     endTime_.update();
@@ -155,9 +143,8 @@ bool NtupleProcessor::initializeConfig()
     return true;
 }
 
-
 bool NtupleProcessor::initializeNtuple()
-{ // Function sets up an ntuple from the input ntuple label.
+{ // Sets up an ntuple from the input ntuple label.
   // Returns false if the ntuple is not found in the given configuration files.
     logger_.debug("initializeNtuple(): Getting config file {}", ntupleCfgName_);
 
@@ -200,6 +187,13 @@ bool NtupleProcessor::initializeNtuple()
   // Store the mapped information in a config file for this NP instance. Get a pointer to it for later.
     ntupleInstanceCfg_ = cfgLocator_.setConfig("current_ntuple_info", ntupleInfo);
 
+    return true;
+}
+
+bool NtupleProcessor::initializeHistogramExtractors()
+{ // Sets up HEs using NP config file.
+    logger_.debug("initializeHistogramExtractors(): Creating CutFlowTable");
+    hExtractors_.push_back(new CutFlowTable());
     return true;
 }
 
