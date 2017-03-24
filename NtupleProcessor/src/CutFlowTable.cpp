@@ -4,6 +4,10 @@ CutFlowTable.cpp
  Modified: 2016-03-23  godshalk
 ------------------------------------------------------------------------------*/
 
+// ROOT Classes
+#include <TFile.h>
+#include <TH1F.h>
+
 // Project Specific classes
 #include "CutFlowTable.h"
 
@@ -27,31 +31,50 @@ void CutFlowTable::increment(string str)
 void CutFlowTable::process()
 { // Called per event. Processes information and fills histograms.
     logger_.trace("process() called.");
-    increment("EventsProcessed");
+    increment("Events Processed");
 }
 
 void CutFlowTable::terminate()
 { // Function that saves the histograms and performs any final actions before processing is completed.
     logger_.trace("terminate() called.");
 
-  // Create histogram
-    // int hSize = n_.size();
-    // string hConfigStr = string("CFT_Zll_cutFlow, Cut Flow Table (Zll), Cuts, Counts, 1, 0,")+to_string(hSize);
-    // TH1* htemp = rfManager_->createHistogram(hConfigStr);
-    // histograms_[htemp->GetName()] = htemp;
+  // Add numbers from ntuple config to the counts recorded.
+    currentNtupleInfo_ = cfgLocator_.getConfig("current_ntuple_info");
+    ni_["Tree Entries"] = nw_["Tree Entries"] = currentNtupleInfo_->get<int>("tree_entries");
+    nw_["Original Events Processed"] = currentNtupleInfo_->get<int>("net_counts");
+    ni_["Original Events Processed"] = currentNtupleInfo_->get<int>("abs_counts");
+    // If there are no events in net_events (i.e. not a sim ntuple(?)) set equal to abs_counts.
+    if(nw_["Original Events Processed"] == 0) nw_["Original Events Processed"] = ni_["Original Events Processed"];
+
+  // Create histogram (TEST)
+    TFile* f_output = TFile::Open("output/cft_test.root", "RECREATE");
+    f_output->cd();
+    int hSize = ni_.size();
+    TH1F* htemp_int = new TH1F("CFT_int_counts", "Cut Flow Table (Int);Cuts;Events", hSize, 0, hSize);
+    TH1F* htemp_wgt = new TH1F("CFT_wgt_counts", "Cut Flow Table (Wgt);Cuts;Events", hSize, 0, hSize);
 
   // Set bin name and contents for each bin.
-    // int currentHBin=1;   // Visible TH1 bins start at 1. 0 is underflow.
-    // for( const auto &keyAndCount : n_ )  // For every key and value in n_...
-    // {   htemp->GetXaxis()->SetBinLabel(currentHBin, keyAndCount.first.c_str());
-    //     htemp->SetBinContent(          currentHBin, keyAndCount.second       );
-    //     currentHBin++;
-    // }
+    int currentHBin=1;   // Visible TH1 bins start at 1. 0 is underflow.
+    for( const auto &keyAndCount : ni_ )  // For every key and value in n_...
+    {   htemp_int->GetXaxis()->SetBinLabel(currentHBin, keyAndCount.first.c_str());
+        htemp_int->SetBinContent(          currentHBin, keyAndCount.second       );
+        currentHBin++;
+    }
+    currentHBin=1;   // Visible TH1 bins start at 1. 0 is underflow.
+    for( const auto &keyAndCount : nw_ )  // For every key and value in n_...
+    {   htemp_wgt->GetXaxis()->SetBinLabel(currentHBin, keyAndCount.first.c_str());
+        htemp_wgt->SetBinContent(          currentHBin, keyAndCount.second       );
+        currentHBin++;
+    }
+
   // Set some drawing options.
-    // htemp->SetOption("TEXT45");
+    htemp_int->SetOption("B TEXT45");
+    htemp_wgt->SetOption("B TEXT45");
 
   // Perform closeout.
     printTable();
+    f_output->Write();
+    f_output->Close();
     // rfManager_->close();
 }
 

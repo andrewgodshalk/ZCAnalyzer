@@ -78,6 +78,7 @@ Bool_t TreeIterator::Process(Long64_t entry)
     for( HistogramExtractor* h: hExtractors_ ) h->process();
 
     nEntriesProcessed_++;
+
     return true;
 }
 

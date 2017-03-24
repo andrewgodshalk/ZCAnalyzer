@@ -45,7 +45,7 @@ class EventMap
   private:
     Logger logger_;
     ConfigLocator cfgLocator_;
-    std::shared_ptr<ConfigReader> evtMapList_;
+    ConfigPtr evtMapList_;
 };
 
 #endif

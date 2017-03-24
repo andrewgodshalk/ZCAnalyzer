@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 NtupleProcessor::NtupleProcessor(int argc, char* argv[])
   : ntupleLabel_(""), cfgFileName_("ZClibrary/config/ntupleprocessor/default.ini"),
     logQuiet_(false), logDebug_(false),
-    eventsToProcess_(-1), firstEventToProcess_(0), options_(""),
+    eventsToProcess_(0), firstEventToProcess_(0), options_(""),
     logger_("NtupleProcessor", "[NP]", 0)
 { // Class initialization
     beginTime_.update();  // Set begin time.
@@ -106,7 +106,7 @@ bool NtupleProcessor::processCommandLineInput(int argc, char* argv[])
     ntupleLabel_         = ( cmdInput.count("ntuple") ? cmdInput["ntuple"].as<string>() : "");
     logDebug_            =   cmdInput.count("debug");
     logQuiet_            =   cmdInput.count("quiet");
-    eventsToProcess_     = ( cmdInput.count("maxevents" ) ? cmdInput["maxevents" ].as<int>() : -1);
+    eventsToProcess_     = ( cmdInput.count("maxevents" ) ? cmdInput["maxevents" ].as<int>() :  0);
     firstEventToProcess_ = ( cmdInput.count("firstevent") ? cmdInput["firstevent"].as<int>() :  0);
 
   // Log files will be huge if debug and no max event setting are set. Give a warning.
@@ -146,6 +146,8 @@ bool NtupleProcessor::initializeConfig()
 bool NtupleProcessor::initializeNtuple()
 { // Sets up an ntuple from the input ntuple label.
   // Returns false if the ntuple is not found in the given configuration files.
+  // TO DO: Make NtupleInfo into its own class/struct, so it's easier to keep track of what info goes into the config file.
+  //   (Easier to look at a class definition rather than checking this function to see what fields are defined for this config file.)
     logger_.debug("initializeNtuple(): Getting config file {}", ntupleCfgName_);
 
   // Extract ntuple information from ntuple config file.
@@ -161,10 +163,11 @@ bool NtupleProcessor::initializeNtuple()
 
   // Add information for ntuple to a map by iterating through split list.
     map<string, string> ntupleInfo;
-    ntupleInfo["label"     ] = ntupleLabel_;
+    ntupleInfo["label"      ] = ntupleLabel_;
     auto nInfo = splitInfo.begin();
-    ntupleInfo["dataset"   ] = *nInfo++;
-    ntupleInfo["properties"] = *nInfo++;
+    ntupleInfo["data_or_sim"] = *nInfo++;
+    ntupleInfo["dataset"    ] = *nInfo++;
+    ntupleInfo["properties" ] = *nInfo++;
     while(nInfo != splitInfo.end()-1)
         ntupleInfo["properties"] += " " + *nInfo++;
     ntupleInfo["filename"  ] = ntuplePath + '/' + *nInfo++;
@@ -204,7 +207,10 @@ void NtupleProcessor::processNtuple()
     logger_.info("================================================================================");
     logger_.info("===Beginning Event Processing===");
 
-    if( eventsToProcess_ > 0 || firstEventToProcess_ > 0 ) ntupleTree_->Process(tIter_, "", eventsToProcess_, firstEventToProcess_);
+    if( eventsToProcess_ > 0 || firstEventToProcess_ > 0 )
+    {   if( eventsToProcess_ == 0 ) eventsToProcess_ = ntupleInstanceCfg_->get<int>("tree_entries");
+        ntupleTree_->Process(tIter_, "", eventsToProcess_, firstEventToProcess_);
+    }
     else ntupleTree_->Process(tIter_);
 
     logger_.info("");

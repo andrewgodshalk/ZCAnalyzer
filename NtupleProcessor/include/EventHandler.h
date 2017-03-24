@@ -19,6 +19,7 @@
 // Root Classes
 #include <TTree.h>
 // Project Specific classes
+#include "ConfigReader.h"
 #include "EventMap.h"
 #include "Logger.h"
 
@@ -43,6 +44,8 @@ class EventHandler
 
     void resetEventVariables();
 
+    ConfigLocator cfgLocator_;
+    ConfigPtr currentNtupleInfo_;
     Logger logger_;
 
 };

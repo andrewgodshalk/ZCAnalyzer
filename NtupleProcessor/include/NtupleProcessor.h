@@ -70,11 +70,11 @@ class NtupleProcessor
     std::string   ntupleCfgName_   ;
     std::string   dsCfgName_       ;
     std::string   eventMapCfgName_ ;
-    std::shared_ptr<ConfigReader> procCfg_   ;
-    std::shared_ptr<ConfigReader> ntupleCfg_ ;
-    std::shared_ptr<ConfigReader> datasetCfg_;
-    std::shared_ptr<ConfigReader> eventMapInstanceCfg_;
-    std::shared_ptr<ConfigReader> ntupleInstanceCfg_  ;  // Config file containing
+    ConfigPtr procCfg_   ;
+    ConfigPtr ntupleCfg_ ;
+    ConfigPtr datasetCfg_;
+    ConfigPtr eventMapInstanceCfg_;
+    ConfigPtr ntupleInstanceCfg_  ;  // Config file containing
       // all information important for this instance of NtupleProcessor, including
       // information drawn from ntuple and dataset config files.
 

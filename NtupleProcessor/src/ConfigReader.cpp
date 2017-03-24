@@ -6,7 +6,7 @@ using std::map;
 using std::shared_ptr;
 using std::string;
 
-map<string, shared_ptr<ConfigReader> > ConfigLocator::cfgs_ = map<string, shared_ptr<ConfigReader> >();
+map<string, ConfigPtr > ConfigLocator::cfgs_ = map<string, ConfigPtr >();
 
 ConfigLocator* ConfigReader::cfgLocator_ = new ConfigLocator();
 

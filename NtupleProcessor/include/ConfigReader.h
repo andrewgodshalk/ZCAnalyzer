@@ -29,7 +29,9 @@
 // #include "ConfigLocator.h"
 
 // Forward declarations
+class ConfigReader;
 class ConfigLocator;
+typedef std::shared_ptr<ConfigReader> ConfigPtr;
 
 class ConfigReader {
   public:
@@ -76,14 +78,13 @@ class ConfigReader {
     const boost::property_tree::ptree infoTree() const {return pt;}
 
   protected:
-    std::shared_ptr<ConfigReader> base_ ;  // Base config that this config modifies.
+    ConfigPtr base_ ;  // Base config that this config modifies.
         // Refers to this pointer for values that aren't stored in this config.
     std::string fn_config_;           // Location of the input configuration file.
     boost::property_tree::ptree pt;   // Property tree read from file.
     static ConfigLocator* cfgLocator_;
     // Logger logger_;
 };
-
 
 
 /*------------------------------------------------------------------------------
@@ -97,25 +98,25 @@ class ConfigReader {
 class ConfigLocator {
 
 protected:
-  static std::map<std::string, std::shared_ptr<ConfigReader> > cfgs_;
+  static std::map<std::string, ConfigPtr > cfgs_;
   // Logger logger_;
 
   public:
     // ConfigLocator(){}
     // ~ConfigLocator(){}
 
-    static std::shared_ptr<ConfigReader> getConfig(std::string cfg_name)
+    static ConfigPtr getConfig(std::string cfg_name)
     { // If configuration hasn't already been loaded, load it.
         if(cfgs_.find(cfg_name) == cfgs_.end()) cfgs_[cfg_name] = std::make_shared<ConfigReader>(cfg_name);
         return cfgs_[cfg_name];
     }
 
-    static std::shared_ptr<ConfigReader> setConfig(std::string cfg_label, std::string cfg_name)
+    static ConfigPtr setConfig(std::string cfg_label, std::string cfg_name)
     { // Set configuration given to a general label for access across classes.
         return cfgs_[cfg_label] = getConfig(cfg_name);
     }
 
-    static std::shared_ptr<ConfigReader> setConfig(std::string cfg_label, const std::map<std::string, std::string>& cfg_map)
+    static ConfigPtr setConfig(std::string cfg_label, const std::map<std::string, std::string>& cfg_map)
     { // Set configuration given to a general label for access across classes.
         return cfgs_[cfg_label] = std::make_shared<ConfigReader>(cfg_map);
     }

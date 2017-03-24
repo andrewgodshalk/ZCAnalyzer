@@ -14,12 +14,14 @@
 
 // Standard Libraries
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 // ROOT Libraries
 #include <TH1.h>
 // Project Specific classes
+#include "ConfigReader.h"
 #include "EventHandler.h"
 #include "HistogramExtractor.h"
 #include "Logger.h"
@@ -40,10 +42,12 @@ class CutFlowTable : public HistogramExtractor
 
 
   private:
-    std::map<std::string, unsigned int> ni_;   // Integer counts
-    std::map<std::string,        float> nw_;   // Weighted counts (weighted by event, based on selection, sim type)
+    std::map<std::string, unsigned long> ni_;   // Integer counts
+    std::map<std::string,        float > nw_;   // Weighted counts (weighted by event, based on selection, sim type)
 
     Logger logger_;
+    ConfigLocator cfgLocator_;
+    ConfigPtr currentNtupleInfo_;
 
     void printTable();  // Prints table to log.
 
