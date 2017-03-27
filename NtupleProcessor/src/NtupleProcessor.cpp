@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 }
 
 NtupleProcessor::NtupleProcessor(int argc, char* argv[])
-  : ntupleLabel_(""), cfgFileName_("ZClibrary/config/ntupleprocessor/default.ini"),
+  : ntupleLabel_(""), cfgFileName_("ZCLibrary/config/ntupleprocessor/default.ini"),
     logQuiet_(false), logDebug_(false),
     eventsToProcess_(0), firstEventToProcess_(0), options_(""),
     logger_("NtupleProcessor", "[NP]", 0)
@@ -158,7 +158,7 @@ bool NtupleProcessor::initializeNtuple()
   // Extract ntuple information from ntuple config file.
     string ntuplePath    = ntupleCfg_->get<string>("ntuple_path" );
     string rawNtupleInfo = ntupleCfg_->get<string>( ntupleLabel_ );
-    logger_.debug("initializeNtuple(): from ntuple cfg for label {}: {}", ntupleLabel_, rawNtupleInfo);
+    logger_.debug("initializeNtuple(): from ntuple cfg for label {}: {}", ntupleLabel_, ntuplePath+rawNtupleInfo);
     if(rawNtupleInfo == "")
     {   logger_.error("No information for {} stored in ntuple config file {}", ntupleLabel_, ntupleCfgName_);
         return false;
@@ -176,7 +176,7 @@ bool NtupleProcessor::initializeNtuple()
     ntupleInfo["properties" ] = *nInfo++;
     while(nInfo != splitInfo.end()-1)
         ntupleInfo["properties"] += " " + *nInfo++;
-    ntupleInfo["filename"  ] = ntuplePath + '/' + *nInfo++;
+    ntupleInfo["filename"  ] = ntuplePath + *nInfo++;
 
   // Use extracted info on file to open the root file
     ntupleFile_ = TFile::Open(ntupleInfo["filename"].c_str());
