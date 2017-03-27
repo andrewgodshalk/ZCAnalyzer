@@ -32,11 +32,11 @@ class RootHandler
     RootHandler(std::string);
     ~RootHandler(){}
 
-    TH1* createHistogram(std::string);   // Creates a histogram within the root file, based on a configuration string.
+    void addHistogram(TH1*, std::string);   // Adds histogram to this RH
+    TH1* createHistogram(   std::string);   // Creates a histogram within the root file, based on a configuration string.
     TH1* getHist(std::string key){return histograms_[key];}
+    // bool cd(const std::string path=""){return file_->cd(path.c_str())}
     void close();   // Saves and closes the root file.
-
-
 
   private:
     bool getHistoPropsFromString(const std::string&);   // Pulls histogram properties from the input string, stores in hProps_;
@@ -47,6 +47,7 @@ class RootHandler
     TFile* file_;
 
     std::map<std::string, TH1*> histograms_;   // Map of histograms, keyed by their names.
+    std::vector<std::string> hProps_;          // Vector initialized at runtime to store histogram properties read in from a configuration string.
 
     Logger logger_;
 };

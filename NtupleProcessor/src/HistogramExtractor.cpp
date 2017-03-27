@@ -12,18 +12,32 @@ HistogramExtractor.cpp
 #include "UtilFunctions.h"
 // Inheriting HE Classes
 #include "CutFlowTable.h"
+#include "NtupleInfo.h"
 
 using std::string;
 using std::vector;
 using utilityFunctions::getListFromString;
 
 
+HistogramExtractor::HistogramExtractor(const std::string cfgStr) :
+  currentNtupleInfo_(NtupleInfo::getInstance()),
+  configStr_(cfgStr)
+{
+  // Split config string
+    getListFromString(configStr_, cfgValues_);
+
+  // set up RootHandler
+    string rhFileName = "output/";
+    if(cfgValues_[0] == "CutFlowTable") rhFileName += "CFT_";
+    rhFileName += currentNtupleInfo_->label + "_" + cfgValues_[1] + ".root";
+    rh_ = new RootHandler(rhFileName);
+}
+
 HistogramExtractor* HistogramExtractor::generateHistogramExtractor(string cfgStr)
 { // Function takes a string, specified in the ntupleprocessor config file,
   //   and uses it to generate a histogram extractor of the appropriate class.
     vector<string> heCfgValues;
     getListFromString(cfgStr, heCfgValues);
-    // if(heCfgValues[0] == "CutFlowTable") return (HistogramExtractor*) new CutFlowTable();
-    if(heCfgValues[0] == "CutFlowTable") return new CutFlowTable();
+    if(heCfgValues[0] == "CutFlowTable") return new CutFlowTable(cfgStr);
     return nullptr;
 }

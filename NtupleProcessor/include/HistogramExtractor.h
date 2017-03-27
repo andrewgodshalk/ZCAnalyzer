@@ -27,7 +27,7 @@
 
 class HistogramExtractor {
   public:
-    HistogramExtractor(){}
+    HistogramExtractor(const std::string cfgStr="");
     virtual ~HistogramExtractor(){}
 
     virtual void setEventHandler(EventHandler* eh)
@@ -42,8 +42,13 @@ class HistogramExtractor {
     static HistogramExtractor* generateHistogramExtractor(std::string);
 
   protected:
+    NtupleInfo* currentNtupleInfo_;
+
     EventHandler* evt_;         // Contains event information (selection profile, mapped variables, etc.)
     RootHandler*  rh_;       // Manages output file where histograms are stored.
+
+    std::string configStr_;
+    std::vector<std::string> cfgValues_;
 
 };
 

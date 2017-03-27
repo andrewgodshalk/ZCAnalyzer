@@ -9,6 +9,7 @@ CutFlowTable.cpp
 #include <TH1F.h>
 // Project Specific classes
 #include "CutFlowTable.h"
+#include "UtilFunctions.h"
 
 using std::pair;
 using std::string;
@@ -16,10 +17,17 @@ using std::vector;
 using std::to_string;
 
 CutFlowTable::CutFlowTable()
-  : HistogramExtractor(),
-    currentNtupleInfo_(NtupleInfo::getInstance()),
+  : HistogramExtractor(""),
     logger_("NtupleProcessor", "[CF]", 2)
 {   logger_.debug("CutFlowTable created.");
+}
+
+CutFlowTable::CutFlowTable(const string& cfgStr)
+  : HistogramExtractor(cfgStr),
+    logger_("NtupleProcessor", "[CF]", 2)
+{   logger_.debug("CutFlowTable created from string: {}", cfgStr);
+  // Create histogram from input string.
+
 }
 
 void CutFlowTable::increment(string str)
@@ -46,8 +54,8 @@ void CutFlowTable::terminate()
     if(nw_["Original Events Processed"] == 0) nw_["Original Events Processed"] = ni_["Original Events Processed"];
 
   // Create histogram (TEST)
-    TFile* f_output = TFile::Open("output/cft_test.root", "RECREATE");
-    f_output->cd();
+    // TFile* f_output = TFile::Open("output/cft_test.root", "RECREATE");
+    // f_output->cd();
     int hSize = ni_.size();
     TH1F* htemp_int = new TH1F("CFT_int_counts", "Cut Flow Table (Int);Cuts;Events", hSize, 0, hSize);
     TH1F* htemp_wgt = new TH1F("CFT_wgt_counts", "Cut Flow Table (Wgt);Cuts;Events", hSize, 0, hSize);
@@ -70,11 +78,16 @@ void CutFlowTable::terminate()
     htemp_int->SetOption("B TEXT45");
     htemp_wgt->SetOption("B TEXT45");
 
+  // Add plots to root handler and close.
+    rh_->addHistogram(htemp_int, "integral_counts");
+    rh_->addHistogram(htemp_wgt, "weighted_counts");
+    rh_->close();
+
   // Perform closeout.
     printTable();
-    f_output->Write();
-    f_output->Close();
-    // rfManager_->close();
+    delete htemp_int;
+    delete htemp_wgt;
+
 }
 
 void CutFlowTable::printTable()

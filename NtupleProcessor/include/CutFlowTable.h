@@ -25,13 +25,14 @@
 #include "EventHandler.h"
 #include "HistogramExtractor.h"
 #include "Logger.h"
-#include "NtupleInfo.h"
+
 
 
 class CutFlowTable : public HistogramExtractor
 {
   public:
     CutFlowTable();
+    CutFlowTable(const std::string&);
     ~CutFlowTable(){}
 
     void increment(std::string);
@@ -41,12 +42,9 @@ class CutFlowTable : public HistogramExtractor
     void process();     // Called per event. Processes information and fills histograms.
     void terminate();   // Function that saves the histograms and performs any final actions before processing is completed.
 
-
   private:
     std::map<std::string, unsigned long> ni_;   // Integer counts
     std::map<std::string,        float > nw_;   // Weighted counts (weighted by event, based on selection, sim type)
-
-    NtupleInfo* currentNtupleInfo_;
 
     Logger logger_;
 

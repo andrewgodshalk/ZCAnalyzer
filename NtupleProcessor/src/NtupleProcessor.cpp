@@ -206,18 +206,8 @@ bool NtupleProcessor::initializeHistogramExtractors()
 { // Sets up HEs using NP config file.
     logger_.debug("initializeHistogramExtractors(): called.");
 
-// TEST: Check extraction of information procCfg_
-    // logger_.debug("Attempting to pull HISTOGRAM EXTRACTORS tree from ntupleprocessor cfg.");
-    // propTree heCfgStrs = procCfg_->getSubTree("HISTOGRAM EXTRACTORS");
-    // logger_.debug("Config strings stored in HISTOGRAM EXTRACTORS:");
-    // for(const auto& heStr : heCfgStrs)
-    //     logger_.debug("-> {} = {}", heStr.first, string(heStr.second.data()));
-
   // Get HE properties from ntupleprocessor config file.
     propTree heCfgStrs = procCfg_->getSubTree("HISTOGRAM EXTRACTORS");
-    // hExtractors_.push_back(new CutFlowTable());
-    // hExtractors_.push_back(HistogramExtractor::generateHistogramExtractor("CutFlowTable SELECTION_STR"));
-    // hExtractors_.push_back(HistogramExtractor::generateHistogramExtractor(procCfg_->get<string>("HISTOGRAM EXTRACTORS.cft")));
     for(const auto& heStr : heCfgStrs)
     {   logger_.debug("Creating histogram from string: {}", heStr.second.data());
         hExtractors_.push_back(HistogramExtractor::generateHistogramExtractor(heStr.second.data()));
