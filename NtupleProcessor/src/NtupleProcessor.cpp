@@ -13,6 +13,7 @@ NtupleProcessor.cpp
 #include <sys/stat.h>
 #include <unistd.h>
 // Boost Libraries
+#include <boost/property_tree/ptree.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
@@ -21,12 +22,16 @@ NtupleProcessor.cpp
 // Project Specific classes
 #include "NtupleProcessor.h"
 #include "CutFlowTable.h"
+#include "UtilFunctions.h"
 
 using std::endl;   using std::vector    ;
 using std::cout;   using std::string    ;
 using std::cin ;   using std::shared_ptr;
 using std::map ;   using std::to_string ;
+using utilityFunctions::getListFromString;
 typedef unsigned long counter;
+typedef boost::property_tree::ptree propTree;
+typedef propTree::const_iterator ptreeIter;
 namespace po = boost::program_options;
 
 // MAIN() - Used only to pass on input to NtupleProcessor class.
@@ -148,7 +153,7 @@ bool NtupleProcessor::initializeNtuple()
   // Returns false if the ntuple is not found in the given configuration files.
   // TO DO: Make NtupleInfo into its own class/struct, so it's easier to keep track of what info goes into the config file.
   //   (Easier to look at a class definition rather than checking this function to see what fields are defined for this config file.)
-    logger_.debug("initializeNtuple(): Getting config file {}", ntupleCfgName_);
+    logger_.trace("initializeNtuple(): Called.");
 
   // Extract ntuple information from ntuple config file.
     string ntuplePath    = ntupleCfg_->get<string>("ntuple_path" );
@@ -158,7 +163,8 @@ bool NtupleProcessor::initializeNtuple()
     {   logger_.error("No information for {} stored in ntuple config file {}", ntupleLabel_, ntupleCfgName_);
         return false;
     }
-    vector<string> splitInfo;   ConfigReader::getListFromString(rawNtupleInfo, splitInfo);
+    // vector<string> splitInfo;   ConfigReader::getListFromString(rawNtupleInfo, splitInfo);
+    vector<string> splitInfo;   getListFromString(rawNtupleInfo, splitInfo);
     // Info has format in file: <label> = <dataset> <dataset_property_list> <filename>
 
   // Add information for ntuple to a map by iterating through split list.
@@ -177,10 +183,10 @@ bool NtupleProcessor::initializeNtuple()
 
   // Extract tree pointer and count info from file.
     ntupleTree_ = (TTree*) ntupleFile_->Get("tree");
-    int posCounts = ((TH1F*) ntupleFile_->Get("CountPosWeight"))->GetBinContent(1);
-    int negCounts = ((TH1F*) ntupleFile_->Get("CountNegWeight"))->GetBinContent(1);
-    int absCounts = ((TH1F*) ntupleFile_->Get("Count"         ))->GetBinContent(1);
-    int treeEntries = ntupleTree_->GetEntries();
+    long posCounts = ((TH1F*) ntupleFile_->Get("CountPosWeight"))->GetBinContent(1);
+    long negCounts = ((TH1F*) ntupleFile_->Get("CountNegWeight"))->GetBinContent(1);
+    long absCounts = ((TH1F*) ntupleFile_->Get("Count"         ))->GetBinContent(1);
+    long treeEntries = ntupleTree_->GetEntries();
     ntupleInfo["abs_counts"  ] = to_string(absCounts);
     ntupleInfo["pos_counts"  ] = to_string(posCounts);
     ntupleInfo["neg_counts"  ] = to_string(negCounts);
@@ -190,13 +196,32 @@ bool NtupleProcessor::initializeNtuple()
   // Store the mapped information in a config file for this NP instance. Get a pointer to it for later.
     ntupleInstanceCfg_ = cfgLocator_.setConfig("current_ntuple_info", ntupleInfo);
 
+    // NtupleInfo* ntupleInfoSingleton = NtupleInfo::getInstance();
+    NtupleInfo::getInstance();
+
     return true;
 }
 
 bool NtupleProcessor::initializeHistogramExtractors()
 { // Sets up HEs using NP config file.
-    logger_.debug("initializeHistogramExtractors(): Creating CutFlowTable");
-    hExtractors_.push_back(new CutFlowTable());
+    logger_.debug("initializeHistogramExtractors(): called.");
+
+// TEST: Check extraction of information procCfg_
+    // logger_.debug("Attempting to pull HISTOGRAM EXTRACTORS tree from ntupleprocessor cfg.");
+    // propTree heCfgStrs = procCfg_->getSubTree("HISTOGRAM EXTRACTORS");
+    // logger_.debug("Config strings stored in HISTOGRAM EXTRACTORS:");
+    // for(const auto& heStr : heCfgStrs)
+    //     logger_.debug("-> {} = {}", heStr.first, string(heStr.second.data()));
+
+  // Get HE properties from ntupleprocessor config file.
+    propTree heCfgStrs = procCfg_->getSubTree("HISTOGRAM EXTRACTORS");
+    // hExtractors_.push_back(new CutFlowTable());
+    // hExtractors_.push_back(HistogramExtractor::generateHistogramExtractor("CutFlowTable SELECTION_STR"));
+    // hExtractors_.push_back(HistogramExtractor::generateHistogramExtractor(procCfg_->get<string>("HISTOGRAM EXTRACTORS.cft")));
+    for(const auto& heStr : heCfgStrs)
+    {   logger_.debug("Creating histogram from string: {}", heStr.second.data());
+        hExtractors_.push_back(HistogramExtractor::generateHistogramExtractor(heStr.second.data()));
+    }
     return true;
 }
 

@@ -14,7 +14,8 @@ using std::string;
 
 EventHandler::EventHandler()
   : evtMap_(new EventMap()),
-    currentNtupleInfo_(cfgLocator_.getConfig("current_ntuple_info")),
+    // currentNtupleInfo_(cfgLocator_.getConfig("current_ntuple_info")),
+    currentNtupleInfo_(NtupleInfo::getInstance()),
     logger_("NtupleProcessor", "[EH]", 1)
 {   logger_.debug("EventHandler Created.");
 
@@ -52,7 +53,8 @@ void EventHandler::evaluateEvent()
     // for(int i=0; i < evtMap_->get("naLeptons"); i++) logger_.trace("evaluateEvent(): lepton a{}: id {}, pt {}", i, evtMap_->get("aLeptons_pdgId", i), evtMap_->get("aLeptons_pt", i));
 
   // Set up event weight based on sign from generation, or just set = 1.0.
-    if(currentNtupleInfo_->get<string>("data_or_sim") == "sim")
+  // if(currentNtupleInfo_->get<string>("data_or_sim") == "sim")
+    if(currentNtupleInfo_->isSim)
     {   *(calculatedVars_["genSign"    ]) = (get("genWeight") < 0 ? -1 : 1);
         *(calculatedVars_["eventWeight"]) = *(calculatedVars_["genSign"]);
     }

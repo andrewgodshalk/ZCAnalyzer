@@ -22,6 +22,7 @@
 #include "ConfigReader.h"
 #include "EventMap.h"
 #include "Logger.h"
+#include "NtupleInfo.h"
 
 class EventHandler
 {
@@ -44,8 +45,9 @@ class EventHandler
 
     void resetEventVariables();
 
-    ConfigLocator cfgLocator_;
-    ConfigPtr currentNtupleInfo_;
+    // ConfigLocator cfgLocator_;
+    // ConfigPtr currentNtupleInfo_;
+    NtupleInfo* currentNtupleInfo_;
     Logger logger_;
 
 };

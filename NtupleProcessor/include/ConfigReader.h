@@ -32,6 +32,8 @@
 class ConfigReader;
 class ConfigLocator;
 typedef std::shared_ptr<ConfigReader> ConfigPtr;
+typedef boost::property_tree::ptree propTree;
+typedef propTree::const_iterator ptreeIter;
 
 class ConfigReader {
   public:
@@ -56,32 +58,22 @@ class ConfigReader {
         data = get<T>(key);
     }
 
-    template <typename T>
-    static void getListFromString(std::string& str, std::vector<T>& list)
-    { // Simple function that extracts the templated object from a string.
-      // Feeds string into a stringstream and, while there is still something to
-      //   read out, ouputs the entry from the stream into an variable and
-      //   pushes the variable into the output vector.
-        list.clear();
-        std::stringstream strm(str);
-        while(true) {
-            T n;   strm >> n;
-            if(!strm) break;
-            list.push_back(n);
-        }
-    }
-
     // Functions passed on from property tree
-    boost::property_tree::ptree::const_iterator begin() const {return pt.begin();}
-    boost::property_tree::ptree::const_iterator end()   const {return pt.end();  }
-    // boost::property_tree::ptree::const_iterator find(std::string key) const { return pt.find(key.c_str()); }
-    const boost::property_tree::ptree infoTree() const {return pt;}
+    ptreeIter begin()               const {return pt.begin()  ;}
+    ptreeIter end()                 const {return pt.end()    ;}
+    // ptreeIter find(std::string key) const {return pt.find(key);}
+    const propTree getInfoTree() const {return pt;}
+    const propTree getSubTree(std::string key) const
+    {
+        // return pt.get_child(key);
+        return (pt.find(key) == pt.not_found() ? base_->getSubTree(key) : pt.get_child(key) );
+    }
 
   protected:
     ConfigPtr base_ ;  // Base config that this config modifies.
         // Refers to this pointer for values that aren't stored in this config.
     std::string fn_config_;           // Location of the input configuration file.
-    boost::property_tree::ptree pt;   // Property tree read from file.
+    propTree pt;   // Property tree read from file.
     static ConfigLocator* cfgLocator_;
     // Logger logger_;
 };
@@ -119,6 +111,11 @@ protected:
     static ConfigPtr setConfig(std::string cfg_label, const std::map<std::string, std::string>& cfg_map)
     { // Set configuration given to a general label for access across classes.
         return cfgs_[cfg_label] = std::make_shared<ConfigReader>(cfg_map);
+    }
+
+    static bool configLoaded(std::string cfg_name)
+    { // Returns if the config has been created.
+        return cfgs_.find(cfg_name) == cfgs_.end();
     }
 
 };

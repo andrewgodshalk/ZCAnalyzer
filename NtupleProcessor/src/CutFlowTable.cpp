@@ -7,7 +7,6 @@ CutFlowTable.cpp
 // ROOT Classes
 #include <TFile.h>
 #include <TH1F.h>
-
 // Project Specific classes
 #include "CutFlowTable.h"
 
@@ -18,6 +17,7 @@ using std::to_string;
 
 CutFlowTable::CutFlowTable()
   : HistogramExtractor(),
+    currentNtupleInfo_(NtupleInfo::getInstance()),
     logger_("NtupleProcessor", "[CF]", 2)
 {   logger_.debug("CutFlowTable created.");
 }
@@ -39,10 +39,9 @@ void CutFlowTable::terminate()
     logger_.trace("terminate() called.");
 
   // Add numbers from ntuple config to the counts recorded.
-    currentNtupleInfo_ = cfgLocator_.getConfig("current_ntuple_info");
-    ni_["Tree Entries"] = nw_["Tree Entries"] = currentNtupleInfo_->get<int>("tree_entries");
-    nw_["Original Events Processed"] = currentNtupleInfo_->get<int>("net_counts");
-    ni_["Original Events Processed"] = currentNtupleInfo_->get<int>("abs_counts");
+    ni_["Tree Entries"] = nw_["Tree Entries"] = currentNtupleInfo_->ntupleEvents;
+    nw_["Original Events Processed"] = currentNtupleInfo_->netDSEvents;
+    ni_["Original Events Processed"] = currentNtupleInfo_->absDSEvents;
     // If there are no events in net_events (i.e. not a sim ntuple(?)) set equal to abs_counts.
     if(nw_["Original Events Processed"] == 0) nw_["Original Events Processed"] = ni_["Original Events Processed"];
 

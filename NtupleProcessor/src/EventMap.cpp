@@ -40,7 +40,7 @@ void EventMap::mapTree(TTree* tree)
     TObjArray* branchList = tree->GetListOfBranches();
 
   // For each branch in the config file...
-    auto branches = evtMapList_->infoTree();
+    auto branches = evtMapList_->getInfoTree();
     for( auto& branch_type : branches)
     {   if(branchList->FindObject(branch_type.first.c_str()) == NULL)
         {   logger_.debug("mapTree(): BRANCH NOT FOUND IN NTUPLE: {} of type {}", branch_type.first, branch_type.second.data());

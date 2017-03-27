@@ -25,6 +25,7 @@
 #include "EventHandler.h"
 #include "HistogramExtractor.h"
 #include "Logger.h"
+#include "NtupleInfo.h"
 
 
 class CutFlowTable : public HistogramExtractor
@@ -45,9 +46,9 @@ class CutFlowTable : public HistogramExtractor
     std::map<std::string, unsigned long> ni_;   // Integer counts
     std::map<std::string,        float > nw_;   // Weighted counts (weighted by event, based on selection, sim type)
 
+    NtupleInfo* currentNtupleInfo_;
+
     Logger logger_;
-    ConfigLocator cfgLocator_;
-    ConfigPtr currentNtupleInfo_;
 
     void printTable();  // Prints table to log.
 

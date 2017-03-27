@@ -14,6 +14,7 @@ GLOBAL CONFIGS SET BY THIS CLASS:
 - current_event_map   - variables and types to be mapped from ttree.
 
 ------------------------------------------------------------------------------*/
+// Standard Libraries
 #include <exception>
 #include <string>
 #include <vector>
@@ -24,6 +25,7 @@ GLOBAL CONFIGS SET BY THIS CLASS:
 #include "ConfigReader.h"
 #include "HistogramExtractor.h"
 #include "Logger.h"
+#include "NtupleInfo.h"
 #include "TimeStamp.h"
 #include "TreeIterator.h"
 
