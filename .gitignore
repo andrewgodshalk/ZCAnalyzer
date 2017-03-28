@@ -38,3 +38,6 @@ lib/*
 
 # Tag file
 tags
+
+# Condor directories
+condor_*
