@@ -27,12 +27,11 @@
 #include "Logger.h"
 
 
-
 class CutFlowTable : public HistogramExtractor
 {
   public:
-    CutFlowTable();
-    CutFlowTable(const std::string&);
+    // CutFlowTable();
+    CutFlowTable(const std::string cfgStr = "CutFlowTable Zll_Lp20e24");
     ~CutFlowTable(){}
 
     void increment(std::string);

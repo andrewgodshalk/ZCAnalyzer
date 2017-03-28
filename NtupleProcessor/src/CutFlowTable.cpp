@@ -16,13 +16,13 @@ using std::string;
 using std::vector;
 using std::to_string;
 
-CutFlowTable::CutFlowTable()
-  : HistogramExtractor(""),
-    logger_("NtupleProcessor", "[CF]", 2)
-{   logger_.debug("CutFlowTable created.");
-}
-
-CutFlowTable::CutFlowTable(const string& cfgStr)
+// CutFlowTable::CutFlowTable()
+//   : HistogramExtractor(""),
+//     logger_("NtupleProcessor", "[CFT]", 2)
+// {   logger_.debug("CutFlowTable created.");
+// }
+//
+CutFlowTable::CutFlowTable(const string cfgStr)
   : HistogramExtractor(cfgStr),
     logger_("NtupleProcessor", "[CF]", 2)
 {   logger_.debug("CutFlowTable created from string: {}", cfgStr);
