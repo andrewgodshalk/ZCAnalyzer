@@ -50,13 +50,14 @@ class NtupleProcessor
       // Function that asks the user a yes or no question.
 
     // Command Line Input
-    std::string ntupleLabel_    ;
-    std::string cfgFileName_    ;
-    bool logQuiet_              ;
-    bool logDebug_              ;
+    std::string cfgFileName_    ;   // Configuration file name (see ZCLibrary/config/ntupleprocessor/)
+    std::string ntupleLabel_    ;   // Label of ntuple to run on  (see ZCLibrary/config/ntuple/)
+    bool logQuiet_              ;   // Activate/deactivate normal terminal output (warnings, errors still output)
+    bool logDebug_              ;   // More detailed output in terminal output, log file.
+    bool batchMode_             ;   // Whether running on batch system.
     counter eventsToProcess_    ;
     counter firstEventToProcess_;
-    std::string options_        ;
+    std::string options_        ;   // Misc. options
 
     // Processing information
     TFile* ntupleFile_       ;

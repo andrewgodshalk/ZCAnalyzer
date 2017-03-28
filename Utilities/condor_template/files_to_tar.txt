@@ -1,0 +1,4 @@
+../NtupleProcessor/bin/NtupleProcessor
+dsList.txt
+../ZCLibrary/config/
+../ZCLibrary/data/

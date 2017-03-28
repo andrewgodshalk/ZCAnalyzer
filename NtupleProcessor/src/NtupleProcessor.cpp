@@ -48,8 +48,8 @@ int main(int argc, char* argv[])
 }
 
 NtupleProcessor::NtupleProcessor(int argc, char* argv[])
-  : ntupleLabel_(""), cfgFileName_("ZCLibrary/config/ntupleprocessor/default.ini"),
-    logQuiet_(false), logDebug_(false),
+  : cfgFileName_("ZCLibrary/config/ntupleprocessor/default.ini"), ntupleLabel_(""),
+    logQuiet_(false), logDebug_(false), batchMode_(false),
     eventsToProcess_(0), firstEventToProcess_(0), options_(""),
     logger_("NtupleProcessor", "[NP]", 0)
 { // Class initialization
@@ -98,6 +98,7 @@ bool NtupleProcessor::processCommandLineInput(int argc, char* argv[])
         ("firstevent"",f",  po::value<int>()   ->default_value(firstEventToProcess_ ), "Number of events to process"                                )
         ("debug"     ",d",                                                             "Increased output for debugging purposes."                   )
         ("quiet"     ",q",                                                             "Minimal console output. Output still logged in file."       )
+        ("batch"     ",b",                                                             "Output optimized for condor batch usage."                   )
         ("options"   ",o",  po::value<string>()->default_value(options_             ), "Misc. options"                                              )
     ;
     po::variables_map cmdInput;
@@ -111,6 +112,7 @@ bool NtupleProcessor::processCommandLineInput(int argc, char* argv[])
     ntupleLabel_         = ( cmdInput.count("ntuple") ? cmdInput["ntuple"].as<string>() : "");
     logDebug_            =   cmdInput.count("debug");
     logQuiet_            =   cmdInput.count("quiet");
+    batchMode_           =   cmdInput.count("batch");
     eventsToProcess_     = ( cmdInput.count("maxevents" ) ? cmdInput["maxevents" ].as<int>() :  0);
     firstEventToProcess_ = ( cmdInput.count("firstevent") ? cmdInput["firstevent"].as<int>() :  0);
 
@@ -122,12 +124,12 @@ bool NtupleProcessor::processCommandLineInput(int argc, char* argv[])
         { cout << "\nAborting program.\n" << endl; return false; }
     }
 
-  // Set up logger with quiet, debug info.
+  // Set up logger with batch, quiet, debug info.
     if(logDebug_)
     {   logger_.setFormat("[%Y-%m-%d %H:%M:%S.%e|%l]%v");
         logger_.setDebug(true);
     }
-    if(logQuiet_) logger_.setQuiet(true);
+    if(logQuiet_ ) logger_.setQuiet(true);
     return true;
 }
 
