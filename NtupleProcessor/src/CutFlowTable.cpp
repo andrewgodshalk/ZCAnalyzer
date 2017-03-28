@@ -79,8 +79,8 @@ void CutFlowTable::terminate()
     htemp_wgt->SetOption("B TEXT45");
 
   // Add plots to root handler and close.
-    rh_->addHistogram(htemp_int, "integral_counts");
-    rh_->addHistogram(htemp_wgt, "weighted_counts");
+    rh_->addHistogram("integral_counts", htemp_int);
+    rh_->addHistogram("weighted_counts", htemp_wgt);
     rh_->close();
 
   // Perform closeout.

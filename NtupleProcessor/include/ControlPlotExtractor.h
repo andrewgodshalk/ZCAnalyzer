@@ -14,9 +14,11 @@
 
 // Standard Libraries
 #include <string>
+#include <map>
 // ROOT Libraries
 #include <TH1.h>
 // Project Specific classes
+#include "ConfigReader.h"
 #include "HistogramExtractor.h"
 #include "Logger.h"
 
@@ -31,7 +33,12 @@ class ControlPlotExtractor : public HistogramExtractor
     void terminate();   // Function that saves the histograms and performs any final actions before processing is completed.
 
   private:
+    void initializeHistograms();
+
     Logger logger_;
+    ConfigPtr cpCfg_;  // Configuration file containing plot setup information
+
+    std::map<std::string, std::string> histFillVariables_;   // Variables from ntuples that are used to fill histograms.
 };
 
 #endif

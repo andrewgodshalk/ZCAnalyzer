@@ -35,7 +35,7 @@ class Logger
     Logger( const char* ln,               // Name of the logger. Used as fileName unless otherwise specified.
             const std::string& pfx = "" ,   // Prefix output at beginning of line in log file.
             const unsigned int  in = 0  ,   // Level of indentation ( (2 spaces)*in )
-            const std::string&  fn = "" ,   // File name for file output.
+            const std::string&  fn = "" ,   // File name for file output. NULL if no file output desired.
             const std::string&  fp = ""     // Path of file output.
           ) : logName_(ln), logPrefix_(pfx), indentCount_(in), fileName_(fn), logDir_(fp), logFormat_("%v")
     { // Check for existing logger with same name.

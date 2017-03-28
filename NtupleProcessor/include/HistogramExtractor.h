@@ -23,7 +23,7 @@
 // #include "Logger.h"
 #include "RootHandler.h"
 // Inheriting HE Classes
-#include "UtilFunctions.h"
+// #include "UtilFunctions.h"
 
 class HistogramExtractor {
   public:
@@ -47,9 +47,13 @@ class HistogramExtractor {
     EventHandler* evt_;         // Contains event information (selection profile, mapped variables, etc.)
     RootHandler*  rh_;       // Manages output file where histograms are stored.
 
-    std::string              configStr_;
-    std::vector<std::string> cfgValues_;
-
+    // Configuration
+    std::vector<std::string> cfgValues_;  // cfgStr, split by spaces.
+    std::string cfgStr_;     // Specifies configuration for this HE
+    std::string classStr_;   // Particular class of HE
+    std::string abbrevStr_;  // Abrreviation of class name.
+    std::string selStr_;     // Specifies selection used for events
+    std::string rhFileName_; // Root file name for RH.
 };
 
 #endif

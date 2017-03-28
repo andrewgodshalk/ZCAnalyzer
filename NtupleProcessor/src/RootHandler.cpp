@@ -21,7 +21,7 @@ using std::vector;
 
 RootHandler::RootHandler(string f)
   : fileName_(f), // filePath_("output/"),
-    hProps_(10,""),
+    // hProps_(10,""),
     logger_("NtupleProcessor", "[RF]", 3)
 { //
     logger_.debug("RootHandler created.");
@@ -34,22 +34,23 @@ RootHandler::RootHandler(string f)
     if(!file_->IsOpen()) logger_.critical("Unable to open file {}", fileName_);
 }
 
-void RootHandler::addHistogram(TH1* h, std::string str)
+void RootHandler::addHistogram(const string str, TH1* h)
 { // Creates a clone of the given histogram with the given name.
     file_->cd();   histograms_[str] = (TH1*) h->Clone(str.c_str());
 }
 
 
-TH1* RootHandler::createHistogram(string configStr)
-{ // Creates a histogram within the root file, based on a configuration string.
-    logger_.trace("createHistogram() called with configStr {}", configStr);
-    if(!getHistoPropsFromString(configStr)) return NULL;
+TH1* RootHandler::createHistogram(const string key, const vector<string>& hProps)
+{ // Creates a histogram within the root file, based on a configuration given.
+  // hProps contains:
+    logger_.trace("createHistogram() called with key {}", key);
+    TH1* htemp = NULL;
 
-    string hName  = hProps_[0];
-    string hTitle = (hProps_[1]+";"+hProps_[2]+";"+hProps_[3]).c_str();
-    float hBinSize  = strtof(hProps_[4].c_str(), NULL);
-    float hMinRange = strtof(hProps_[5].c_str(), NULL);
-    float hMaxRange = strtof(hProps_[6].c_str(), NULL);
+    string hName  = hProps[0];
+    string hTitle = hProps[1] + ";" + hProps[2] + ";" + hProps[3];
+    float hBinSize  = strtof(hProps[4].c_str(), NULL);
+    float hMinRange = strtof(hProps[5].c_str(), NULL);
+    float hMaxRange = strtof(hProps[6].c_str(), NULL);
     int nBins = (hMaxRange-hMinRange)/hBinSize;
   // If bin size isn't exact, make max range exact.
     float calcedMax = hMinRange+(hBinSize*nBins);
@@ -59,13 +60,12 @@ TH1* RootHandler::createHistogram(string configStr)
     file_->cd();
 
   // Create a histogram based on preferences.
-    TH1* htemp = NULL;
-    if(hProps_.back() == "int")
+    if(hProps.back() == "int")
          htemp = new TH1I(hName.c_str(), hTitle.c_str(), nBins, hMinRange, hMaxRange);
     else htemp = new TH1F(hName.c_str(), hTitle.c_str(), nBins, hMinRange, hMaxRange);
 
-  // Store histogram locally and return a pointer.
-    histograms_[hName] = htemp;
+  // // Store histogram locally and return a pointer.
+    histograms_[key] = htemp;
     return htemp;
 }
 
@@ -75,48 +75,4 @@ void RootHandler::close()
     file_->cd();
     for( auto &nameAndHisto : histograms_ ) nameAndHisto.second->Write();
     file_->Close();
-}
-
-bool RootHandler::getHistoPropsFromString(const string& cfgStr)
-{ // Pulls histogram properties from the input string, stores in properties vector.;
-  // Configuration string formats:
-  // <name> ,<title> ,<xlabel> ,<ylabel> ,<binsize> ,<min> ,<max> [,<type>] [,other options][,]
-  // - type float by default. Can also say int.
-  // - properties are delimited by semicolons.
-  // - extra space before or after the semicolon will be ignored.
-    logger_.trace("getHistoPropsFromString() called with config {}", cfgStr);
-
-  // Initialize working variables, storage.
-    typedef string::const_iterator str_citer;
-    typedef reverse_iterator<string::const_iterator> str_rciter;
-    str_citer propBegin, propEnd, substrBegin, substrEnd;
-    propBegin = propEnd = substrBegin = substrEnd = cfgStr.begin();
-    str_citer strEnd = cfgStr.end();
-    hProps_.clear(); // Properties extracted.
-
-    while(propBegin!=strEnd) // Until the end of the string has been met...
-    { // Locate the boundaries of the next property substring.
-        propEnd     = find(       propBegin,  strEnd,     ','); // Find the end of the current property listing.
-        substrBegin = find_if_not(propBegin, propEnd, isspace); // Find the first non-whitespace character to begin the propery.
-        substrEnd   = find_if_not( str_rciter(propEnd), str_rciter(substrBegin), isspace).base();
-          // Find the last non-whitespace character, the end of the property substring
-        hProps_.push_back(string(substrBegin, substrEnd));
-      // Break out if at the end of the string.
-        if(propEnd == strEnd) break;
-      // Otherwise, reset iterators to the next character after the end of the current property.
-        propBegin = substrBegin = substrEnd = propEnd+1;
-    }
-
-  // Test property extraction
-    string testStr = "";
-    for(string& s: hProps_) testStr += s + "|";
-    logger_.debug("getHistoPropsFromString(): separated properties: {}", testStr);
-
-  // Check to make sure the correct number of properties are stored. Return false if not.
-     if(hProps_.size() < 7 || 9 < hProps_.size())
-     {   logger_.error("getHistoPropsFromString(): Only {} properties specified in histogram configurationstring: {}", hProps_.size(), cfgStr);
-         return false;
-     }
-
-    return true;
 }

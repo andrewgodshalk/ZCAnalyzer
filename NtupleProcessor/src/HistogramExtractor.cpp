@@ -22,17 +22,18 @@ using utilityFunctions::getListFromString;
 
 HistogramExtractor::HistogramExtractor(const std::string& cfgStr)
   : currentNtupleInfo_(NtupleInfo::getInstance()),
-    configStr_(cfgStr)
+    cfgStr_(cfgStr)
 {
-  // Split config string
-    getListFromString(configStr_, cfgValues_);
+  // Get config variables from string, initialize members
+    getListFromString(cfgStr_, cfgValues_);
+    classStr_ = cfgValues_[0];
+    selStr_   = cfgValues_[1];
+    if(classStr_ == "CutFlowTable"        ) abbrevStr_ = "CFT_";
+    if(classStr_ == "ControlPlotExtractor") abbrevStr_ = "CPE_";
 
   // set up RootHandler
-    string rhFileName = "output/";
-    if(cfgValues_[0] == "CutFlowTable"        ) rhFileName += "CFT_";
-    if(cfgValues_[0] == "ControlPlotExtractor") rhFileName += "CPE_";
-    rhFileName += currentNtupleInfo_->label + "_" + cfgValues_[1] + ".root";
-    rh_ = new RootHandler(rhFileName);
+    rhFileName_ = string("output/") + abbrevStr_ + currentNtupleInfo_->label + "_" + selStr_ + ".root";
+    rh_ = new RootHandler(rhFileName_);
 }
 
 HistogramExtractor* HistogramExtractor::generateHistogramExtractor(string cfgStr)

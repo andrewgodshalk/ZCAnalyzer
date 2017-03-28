@@ -51,7 +51,8 @@ NtupleProcessor::NtupleProcessor(int argc, char* argv[])
   : cfgFileName_("ZCLibrary/config/ntupleprocessor/default.ini"), ntupleLabel_(""),
     logQuiet_(false), logDebug_(false), batchMode_(false),
     eventsToProcess_(0), firstEventToProcess_(0), options_(""),
-    logger_("NtupleProcessor", "[NP]", 0)
+    // logger_("NtupleProcessor", "[NP]", 0)
+    logger_("TEMP", "[TEMP]", 0, "NULL")
 { // Class initialization
     beginTime_.update();  // Set begin time.
     if(!processCommandLineInput(argc, argv)) throw("help"); // Process command line input. Throw error if unsucessful.
@@ -86,7 +87,7 @@ NtupleProcessor::NtupleProcessor(int argc, char* argv[])
 bool NtupleProcessor::processCommandLineInput(int argc, char* argv[])
 { // Process command line input.
   // Returns false if help is called or input is invalid.
-    logger_.trace("processCommandLineInput() called.");
+    // logger_.trace("processCommandLineInput() called.");
 
   // Set up options
     po::options_description opDesc("NtupleProcessor options", 150);
@@ -115,6 +116,9 @@ bool NtupleProcessor::processCommandLineInput(int argc, char* argv[])
     batchMode_           =   cmdInput.count("batch");
     eventsToProcess_     = ( cmdInput.count("maxevents" ) ? cmdInput["maxevents" ].as<int>() :  0);
     firstEventToProcess_ = ( cmdInput.count("firstevent") ? cmdInput["firstevent"].as<int>() :  0);
+
+  // Initialize Logger.
+    logger_ = Logger("NtupleProcessor", "[NP]", 0, (batchMode_ ? ntupleLabel_ : ""));
 
   // Log files will be huge if debug and no max event setting are set. Give a warning.
     if(logDebug_ && eventsToProcess_ > 1000 )
@@ -211,7 +215,7 @@ bool NtupleProcessor::initializeHistogramExtractors()
   // Get HE properties from ntupleprocessor config file.
     propTree heCfgStrs = procCfg_->getSubTree("HISTOGRAM EXTRACTORS");
     for(const auto& heStr : heCfgStrs)
-    {   logger_.debug("Creating histogram from string: {}", heStr.second.data());
+    {   logger_.debug("Creating histogram extractor from string: {}", heStr.second.data());
         hExtractors_.push_back(HistogramExtractor::generateHistogramExtractor(heStr.second.data()));
     }
     return true;
