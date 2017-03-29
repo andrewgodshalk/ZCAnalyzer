@@ -13,6 +13,7 @@
 ------------------------------------------------------------------------------*/
 
 // Standard Libraries
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
@@ -26,12 +27,11 @@
 #include "HistogramExtractor.h"
 #include "Logger.h"
 
-
 class CutFlowTable : public HistogramExtractor
 {
   public:
     // CutFlowTable();
-    CutFlowTable(const std::string cfgStr = "CutFlowTable Zll_Lp20e24");
+    CutFlowTable(const std::string cfgStr = "CutFlowTable Zll");
     ~CutFlowTable(){}
 
     void increment(std::string);
@@ -42,11 +42,14 @@ class CutFlowTable : public HistogramExtractor
     void terminate();   // Function that saves the histograms and performs any final actions before processing is completed.
 
   private:
-    std::map<std::string, unsigned long> ni_;   // Integer counts
-    std::map<std::string,        float > nw_;   // Weighted counts (weighted by event, based on selection, sim type)
+    // Counts stored with key "Category.Count"
+    std::map<std::string, unsigned long> ni_ ;   // Integer counts
+    std::map<std::string,        float > nw_ ;   // Weighted counts (weighted by event, based on selection, sim type)
+    std::list<std::pair<std::string, std::list<std::string> > > countList_;
+      // Ordered list of all cut categories and the list of counts for each (i.e list<category, list<count key>)
+      // Created to make the output look pretty.
 
     Logger logger_;
-
     void printTable();  // Prints table to log.
 
 };

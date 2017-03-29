@@ -33,7 +33,7 @@ class HistogramExtractor {
     virtual void setEventHandler(EventHandler* eh)
     { // Set up HE's links to EH, including the link to its specified SP.
         evt_ = eh;
-        // selectionProfile_ = evt_->getSelectionProfile(selectionProfileStr_);
+        evt_->addSelectionProfile(selStr_);
     }
 
     virtual void process(){}     // Called per event. Processes information and fills histograms.

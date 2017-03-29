@@ -30,11 +30,17 @@ class EventHandler
     EventHandler();
     ~EventHandler(){}
 
-    float get(std::string, int i=-1);
-      // Intermediary function between EH and EM to pass mapped values out of class.
+    float get(const std::string,                    int i=-1) const ;
+    float get(const std::string, const std::string, int i=-1) const ;
+      // Intermediary functions between EH and EM to pass mapped values out of class.
 
     void mapTree(TTree*);
+    void addSelectionProfile(const std::string&);
+    bool eventSatisfiesSelection(const std::string& selStr) const {return eventSatisfiesSelection_.at(selStr);}
     void evaluateEvent();
+    bool evaluateEvent(ConfigPtr);
+    // Eval Functions
+    void evaluateLumiJSON();
 
   private:
   // Event variables, mapped and calculated.
@@ -45,8 +51,10 @@ class EventHandler
 
     void resetEventVariables();
 
-    // ConfigLocator cfgLocator_;
-    // ConfigPtr currentNtupleInfo_;
+    std::map<std::string, ConfigPtr> selectionProfiles_ ;   // Configuration files containing selection information.
+    std::map<std::string, bool> eventSatisfiesSelection_;   // Result of evaluation of each selection profile. Reset, checked every time process is called.
+
+    ConfigLocator cfgLocator_     ;
     NtupleInfo* currentNtupleInfo_;
     Logger logger_;
 

@@ -21,8 +21,15 @@ EventHandler::EventHandler()
 
 }
 
-float EventHandler::get(string key, int i)
+float EventHandler::get(const string key, int i) const
 { // Intermediary function between EH and EM to pass mapped values out of class.
+    if(i<0)
+        return evtMap_->get(key   );
+    return     evtMap_->get(key, i);
+}
+
+float EventHandler::get(const string key, const string selectionProfile, int i) const
+{ // Retrieves calculated values from this event using the value key and the selection profile
     if(i<0)
         return evtMap_->get(key   );
     return     evtMap_->get(key, i);
@@ -34,8 +41,17 @@ void EventHandler::mapTree(TTree* tree)
     evtMap_->mapTree(tree);
 
   // Set up pointers for calculated variables.
-    calculatedVars_["genSign"    ] = & evtMap_->mf_["genSign"    ];
-    calculatedVars_["eventWeight"] = & evtMap_->mf_["eventWeight"];
+    calculatedVars_["genSign"     ] = & evtMap_->mf_["genSign"     ];
+    calculatedVars_["eventWeight" ] = & evtMap_->mf_["eventWeight" ];
+    calculatedVars_["jsonFromFile"] = & evtMap_->mf_["jsonFromFile"];
+}
+
+void EventHandler::addSelectionProfile(const std::string& selStr)
+{ // Allows histogram extractors can add their particular selection to the list of those to be checked.
+    logger_.trace("addSelectionProfile(): add {}", selStr);
+    string cfgPath = string("ZCLibrary/config/selection/")+selStr+".ini";
+    selectionProfiles_      [selStr] = cfgLocator_.getConfig(cfgPath);
+    eventSatisfiesSelection_[selStr] = false;
 }
 
 void EventHandler::evaluateEvent()
@@ -45,13 +61,6 @@ void EventHandler::evaluateEvent()
   // Reset working variables.
     resetEventVariables();
 
-  // Some debug output
-    // logger_.trace("evaluateEvent(): Vtype     = {}", evtMap_->get("Vtype"    ));
-    // logger_.trace("evaluateEvent(): nvLeptons = {}", evtMap_->get("nvLeptons"));
-    // logger_.trace("evaluateEvent(): naLeptons = {}", evtMap_->get("naLeptons"));
-    // for(int i=0; i < evtMap_->get("nvLeptons"); i++) logger_.trace("evaluateEvent(): lepton v{}: id {}, pt {}", i, evtMap_->get("vLeptons_pdgId", i), evtMap_->get("vLeptons_pt", i));
-    // for(int i=0; i < evtMap_->get("naLeptons"); i++) logger_.trace("evaluateEvent(): lepton a{}: id {}, pt {}", i, evtMap_->get("aLeptons_pdgId", i), evtMap_->get("aLeptons_pt", i));
-
   // Set up event weight based on sign from generation, or just set = 1.0.
   // if(currentNtupleInfo_->get<string>("data_or_sim") == "sim")
     if(currentNtupleInfo_->isSim)
@@ -60,11 +69,16 @@ void EventHandler::evaluateEvent()
     }
     else *(calculatedVars_["eventWeight"]) = 1.0;
 
+}
+
+void EventHandler::evaluateLumiJSON()
+{ // Check if event falls within "good" luminosity sections.
 
 }
 
 void EventHandler::resetEventVariables()
 { // Called at beginning of evaluateEvent() to reset calculated variables to their initial, default values.
     logger_.trace("resetEventVariables(): called");
-    for(auto& kv : calculatedVars_)  *(kv.second) = 0;
+    for(auto& kv : calculatedVars_         ) *(kv.second) = 0;
+    for(auto& kv : eventSatisfiesSelection_)   kv.second  = false;
 }
