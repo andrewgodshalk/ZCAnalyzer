@@ -15,7 +15,6 @@
 // Standard Libraries
 #include <map>
 #include <string>
-
 // Root Classes
 #include <TTree.h>
 // Project Specific classes
@@ -36,27 +35,34 @@ class EventHandler
 
     void mapTree(TTree*);
     void addSelectionProfile(const std::string&);
-    bool eventSatisfiesSelection(const std::string& selStr) const {return eventSatisfiesSelection_.at(selStr);}
+    bool eventSatisfiesSelection(const std::string& selStr) const { return selectionProfiles_.at(selStr)->selectionSatisfied_; }
     void evaluateEvent();
     bool evaluateEvent(ConfigPtr);
     // Eval Functions
     void evaluateLumiJSON();
 
   private:
-  // Event variables, mapped and calculated.
-    EventMap* evtMap_;
-    std::map<std::string, float*> calculatedVars_;
-        // Variables calcualted per event. Added to event map and kept track of
-        // here so that they can be reset each event.
-
     void resetEventVariables();
 
-    std::map<std::string, ConfigPtr> selectionProfiles_ ;   // Configuration files containing selection information.
-    std::map<std::string, bool> eventSatisfiesSelection_;   // Result of evaluation of each selection profile. Reset, checked every time process is called.
-
-    ConfigLocator cfgLocator_     ;
+    static ConfigLocator cfgLocator_;
+    EventMap* evtMap_;
     NtupleInfo* currentNtupleInfo_;
     Logger logger_;
+
+    struct SelectionProfile
+    {
+        std::string specifier_;   // String that specifies what selction profile to use.
+        std::map<std::string,             float  > calculatedValues_;
+        std::map<std::string, std::vector<float> > calculatedArrays_;
+          // Values calculated on the fly. Second list contains arrays of variables. One set of variables for each selection profile stored.
+        ConfigPtr cfg_;            // Configuration files containing selection information.
+        bool selectionSatisfied_;  // Result of evaluation of each selection profile. Reset, checked every time process is called.
+        SelectionProfile(const std::string& spec)
+          : specifier_(spec),
+            cfg_(cfgLocator_.getConfig(std::string("ZCLibrary/config/selection/")+spec+".ini"))
+        {}
+    };
+    std::map<std::string, SelectionProfile*> selectionProfiles_;   // Structs stored by specifier
 
 };
 

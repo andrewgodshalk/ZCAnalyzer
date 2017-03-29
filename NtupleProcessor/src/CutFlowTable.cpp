@@ -4,6 +4,8 @@ CutFlowTable.cpp
  Modified: 2016-03-23  godshalk
 ------------------------------------------------------------------------------*/
 
+// Standard Libraries
+#include <algorithm>
 // ROOT Classes
 #include <TFile.h>
 #include <TH1F.h>
@@ -12,22 +14,28 @@ CutFlowTable.cpp
 #include "UtilFunctions.h"
 
 using std::list;
+using std::max;
 using std::pair;
 using std::string;
-using std::vector;
 using std::to_string;
+using std::vector;
 
 CutFlowTable::CutFlowTable(const string cfgStr)
   : HistogramExtractor(cfgStr),
-    logger_("NtupleProcessor", "[CF]", 2)
+    logger_("NtupleProcessor", "[CFT]", 2)
 {   logger_.debug("CutFlowTable created from string: {}", cfgStr);
     countList_.push_back( { "Event" , {"Original Events Processed", "Tree Entries", "Events Processed", "JSON from Ntuple", "JSON from File"} } );
+    for(auto& cat_list : countList_)
+        for(auto& countName : cat_list.second)
+    {   string fullKey = cat_list.first+"."+countName;
+        nw_[fullKey] = ni_[fullKey] = 0;
+    }
 }
 
 void CutFlowTable::increment(string str)
 { // Increments both integral and weighted counters for input string.
     ni_[str]++;
-    nw_[str] += evt_->get("eventWeight");
+    nw_[str] += evt_->get(selStr_, "eventWeight");
 }
 
 void CutFlowTable::process()
@@ -98,9 +106,10 @@ void CutFlowTable::printTable()
     unsigned int maxKeyLength      = 0;
     unsigned int maxIntCountLength = 0;
     unsigned int maxWgtCountLength = 0;
-    for(auto& cat_list : countList_)
+    for(const auto& cat_list : countList_)
         for(auto& countName : cat_list.second)
     {   string fullKey = cat_list.first+"."+countName;
+        logger_.debug("Checking lengths of {} listings...", fullKey);
         if(                      countName.length() > maxKeyLength      ) maxKeyLength      =                       countName.length();
         if(to_string(     ni_.at(fullKey)).length() > maxIntCountLength ) maxIntCountLength = to_string(     ni_.at(fullKey)).length();
         if(to_string((int)nw_.at(fullKey)).length() > maxWgtCountLength ) maxWgtCountLength = to_string((int)nw_.at(fullKey)).length();
@@ -108,7 +117,7 @@ void CutFlowTable::printTable()
     maxWgtCountLength+=2;  // Add 2 digits for tenths decimal.
 
   // Print to log.
-    logger_.info(" === Cut Flow Table ================");
+    logger_.info("=== Cut Flow Table - {} {}", selStr_, string(max(3, (int)(48-selStr_.length())), '='));
     string countOutputFormat = "";
     countOutputFormat += "   {0:>"+to_string(maxKeyLength)+"s} : {1:"+to_string(maxWgtCountLength)+".1f} ({2:"+to_string(maxIntCountLength)+"d})";
     for(auto& cat_list : countList_)
@@ -120,6 +129,7 @@ void CutFlowTable::printTable()
     }
 
   // End output
-    logger_.info(" ===================================");
+    logger_.info("======================================================================");
+    // logger_.info("{}", string( 38+selStr_.length() , '=') );
     logger_.info("");
 }

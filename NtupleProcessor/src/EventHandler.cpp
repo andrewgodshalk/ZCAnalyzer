@@ -12,6 +12,9 @@ EventHandler.cpp
 using std::map;
 using std::string;
 
+// Initialize statics
+ConfigLocator EventHandler::cfgLocator_;
+
 EventHandler::EventHandler()
   : evtMap_(new EventMap()),
     // currentNtupleInfo_(cfgLocator_.getConfig("current_ntuple_info")),
@@ -28,11 +31,10 @@ float EventHandler::get(const string key, int i) const
     return     evtMap_->get(key, i);
 }
 
-float EventHandler::get(const string key, const string selectionProfile, int i) const
+float EventHandler::get(const string selectionProfile, const string key, int i) const
 { // Retrieves calculated values from this event using the value key and the selection profile
-    if(i<0)
-        return evtMap_->get(key   );
-    return     evtMap_->get(key, i);
+    if(i<0) return selectionProfiles_.at(selectionProfile)->calculatedValues_.at(key)   ;
+    else    return selectionProfiles_.at(selectionProfile)->calculatedArrays_.at(key)[i];
 }
 
 void EventHandler::mapTree(TTree* tree)
@@ -40,18 +42,20 @@ void EventHandler::mapTree(TTree* tree)
     logger_.trace("mapTree(): called");
     evtMap_->mapTree(tree);
 
-  // Set up pointers for calculated variables.
-    calculatedVars_["genSign"     ] = & evtMap_->mf_["genSign"     ];
-    calculatedVars_["eventWeight" ] = & evtMap_->mf_["eventWeight" ];
-    calculatedVars_["jsonFromFile"] = & evtMap_->mf_["jsonFromFile"];
+  // Set up calculated variables.
+    for( auto& sp : selectionProfiles_ )
+    {
+      sp.second->calculatedValues_["genSign"     ] = 0;
+      sp.second->calculatedValues_["eventWeight" ] = 0;
+      sp.second->calculatedValues_["jsonFromFile"] = 0;
+    }
+
 }
 
 void EventHandler::addSelectionProfile(const std::string& selStr)
 { // Allows histogram extractors can add their particular selection to the list of those to be checked.
     logger_.trace("addSelectionProfile(): add {}", selStr);
-    string cfgPath = string("ZCLibrary/config/selection/")+selStr+".ini";
-    selectionProfiles_      [selStr] = cfgLocator_.getConfig(cfgPath);
-    eventSatisfiesSelection_[selStr] = false;
+    selectionProfiles_[selStr] = new SelectionProfile(selStr);
 }
 
 void EventHandler::evaluateEvent()
@@ -64,10 +68,12 @@ void EventHandler::evaluateEvent()
   // Set up event weight based on sign from generation, or just set = 1.0.
   // if(currentNtupleInfo_->get<string>("data_or_sim") == "sim")
     if(currentNtupleInfo_->isSim)
-    {   *(calculatedVars_["genSign"    ]) = (get("genWeight") < 0 ? -1 : 1);
-        *(calculatedVars_["eventWeight"]) = *(calculatedVars_["genSign"]);
-    }
-    else *(calculatedVars_["eventWeight"]) = 1.0;
+        for( auto& sp : selectionProfiles_ )
+        {     sp.second->calculatedValues_["genSign"    ]
+            = sp.second->calculatedValues_["eventWeight"]
+            = (get("genWeight") < 0 ? -1 : 1);
+        }
+    else for( auto& sp : selectionProfiles_ ) sp.second->calculatedValues_["eventWeight"] = 1.0;
 
 }
 
@@ -79,6 +85,10 @@ void EventHandler::evaluateLumiJSON()
 void EventHandler::resetEventVariables()
 { // Called at beginning of evaluateEvent() to reset calculated variables to their initial, default values.
     logger_.trace("resetEventVariables(): called");
-    for(auto& kv : calculatedVars_         ) *(kv.second) = 0;
-    for(auto& kv : eventSatisfiesSelection_)   kv.second  = false;
+    for( auto& sp : selectionProfiles_ )
+    {
+        for(auto& kv : sp.second->calculatedValues_ ) kv.second = 0;
+        for(auto& kv : sp.second->calculatedArrays_ ) kv.second.clear();
+        sp.second->selectionSatisfied_ = false;
+    }
 }

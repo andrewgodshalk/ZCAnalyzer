@@ -49,9 +49,10 @@ void ControlPlotExtractor::initializeHistograms()
 void ControlPlotExtractor::process()
 { // Called per event. Processes information and fills histograms.
     logger_.trace("process() called.");
+    float eventWeight = evt_->get(selStr_, "eventWeight");
     for( auto& hist_fill : histFillVariables_)    // Cycle through histogram fill instructions.
         if(hist_fill.second != "")  // If a variable is given, fill with the event weight.
-            rh_->getHist(hist_fill.first)->Fill(evt_->get(hist_fill.second), evt_->get("eventWeight"));
+            rh_->getHist(hist_fill.first)->Fill(evt_->get(hist_fill.second), eventWeight);
 }
 
 void ControlPlotExtractor::terminate()
