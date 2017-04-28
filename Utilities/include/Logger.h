@@ -113,12 +113,12 @@ class Logger
     }
 
     // Functions that pass along messages to logger.
-    template<typename... Args>void trace   (std::string msg, const Args&... args) { logger_->trace   ((logPrefix_+msg).c_str(), args...); }
-    template<typename... Args>void debug   (std::string msg, const Args&... args) { logger_->debug   ((logPrefix_+msg).c_str(), args...); }
-    template<typename... Args>void info    (std::string msg, const Args&... args) { logger_->info    ((logPrefix_+msg).c_str(), args...); }
-    template<typename... Args>void warn    (std::string msg, const Args&... args) { logger_->warn    ((logPrefix_+msg).c_str(), args...); }
-    template<typename... Args>void error   (std::string msg, const Args&... args) { logger_->error   ((logPrefix_+msg).c_str(), args...); }
-    template<typename... Args>void critical(std::string msg, const Args&... args) { logger_->critical((logPrefix_+msg).c_str(), args...); }
+    template<typename... Args>void trace   (std::string msg, const Args&... args) const { logger_->trace   ((logPrefix_+msg).c_str(), args...); }
+    template<typename... Args>void debug   (std::string msg, const Args&... args) const { logger_->debug   ((logPrefix_+msg).c_str(), args...); }
+    template<typename... Args>void info    (std::string msg, const Args&... args) const { logger_->info    ((logPrefix_+msg).c_str(), args...); }
+    template<typename... Args>void warn    (std::string msg, const Args&... args) const { logger_->warn    ((logPrefix_+msg).c_str(), args...); }
+    template<typename... Args>void error   (std::string msg, const Args&... args) const { logger_->error   ((logPrefix_+msg).c_str(), args...); }
+    template<typename... Args>void critical(std::string msg, const Args&... args) const { logger_->critical((logPrefix_+msg).c_str(), args...); }
 
   private:
     std::shared_ptr<spdlog::logger> logger_;

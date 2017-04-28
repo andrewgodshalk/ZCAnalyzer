@@ -25,8 +25,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-// #include "Logger.h"
-// #include "ConfigLocator.h"
+#include "Logger.h"
 
 // Forward declarations
 class ConfigReader;
@@ -45,11 +44,11 @@ class ConfigReader {
     template <typename T>
     T get(const std::string& key) const
     { // If key is not listed...
-        if(pt.find(key) == pt.not_found())
+        if(pt_.find(key) == pt_.not_found())
         {   if(base_) return base_->get<T>(key);  // Check the default config
             else return T();  // Return the default constructor for this type.
         }
-        return pt.get<T>(key);
+        return pt_.get<T>(key);
     }
 
     template <typename T>
@@ -59,23 +58,27 @@ class ConfigReader {
     }
 
     // Functions passed on from property tree
-    ptreeIter begin()               const {return pt.begin()  ;}
-    ptreeIter end()                 const {return pt.end()    ;}
-    // ptreeIter find(std::string key) const {return pt.find(key);}
-    const propTree getInfoTree() const {return pt;}
+    ptreeIter begin()               const {return pt_.begin()  ;}
+    ptreeIter end()                 const {return pt_.end()    ;}
+    // ptreeIter find(std::string key) const {return pt_.find(key);}
+    const propTree getInfoTree() const {return pt_;}
     const propTree getSubTree(std::string key) const
-    {
-        // return pt.get_child(key);
-        return (pt.find(key) == pt.not_found() ? base_->getSubTree(key) : pt.get_child(key) );
+    {   // return pt.get_child(key);
+        return (pt_.find(key) == pt_.not_found() ? base_->getSubTree(key) : pt_.get_child(key) );
     }
 
   protected:
+    void initializeFromBase();
+    propTree overloadPropTree(const propTree&, const propTree&);
+  // Test functions
+    std::string printTree(const propTree&, int level = 0) const;
+
     ConfigPtr base_ ;  // Base config that this config modifies.
         // Refers to this pointer for values that aren't stored in this config.
     std::string fn_config_;           // Location of the input configuration file.
-    propTree pt;   // Property tree read from file.
+    propTree pt_;   // Property tree read from file.
     static ConfigLocator* cfgLocator_;
-    // Logger logger_;
+    Logger logger_;
 };
 
 
@@ -88,18 +91,14 @@ class ConfigReader {
 ------------------------------------------------------------------------------*/
 
 class ConfigLocator {
-
-protected:
-  static std::map<std::string, ConfigPtr > cfgs_;
-  // Logger logger_;
+  protected:
+    static std::map<std::string, ConfigPtr > cfgs_;
 
   public:
-    // ConfigLocator(){}
-    // ~ConfigLocator(){}
-
     static ConfigPtr getConfig(std::string cfg_name)
     { // If configuration hasn't already been loaded, load it.
-        if(cfgs_.find(cfg_name) == cfgs_.end()) cfgs_[cfg_name] = std::make_shared<ConfigReader>(cfg_name);
+        if(cfgs_.find(cfg_name) == cfgs_.end())
+            cfgs_[cfg_name] = std::make_shared<ConfigReader>(cfg_name);
         return cfgs_[cfg_name];
     }
 
