@@ -20,8 +20,10 @@
 // Project Specific classes
 #include "ConfigReader.h"
 #include "EventMap.h"
+// #include "LeptonObject.h"
 #include "Logger.h"
 #include "NtupleInfo.h"
+#include "SelectionProfile.h"
 
 class EventHandler
 {
@@ -32,13 +34,15 @@ class EventHandler
     float get(const std::string,                    int i=-1) const ;
     float get(const std::string, const std::string, int i=-1) const ;
       // Intermediary functions between EH and EM to pass mapped values out of class.
+      // Second function retrieves values specific for a given selection profile.
 
     void mapTree(TTree*);
     void addSelectionProfile(const std::string&);
     bool eventSatisfiesSelection(const std::string& selStr) const { return selectionProfiles_.at(selStr)->selectionSatisfied_; }
     void evaluateEvent();
-    bool evaluateEvent(ConfigPtr);
+    // bool evaluateEvent(ConfigPtr);
     // Eval Functions
+    void applyGenWeight();
     void evaluateLumiJSON();
 
   private:
@@ -49,19 +53,6 @@ class EventHandler
     NtupleInfo* currentNtupleInfo_;
     Logger logger_;
 
-    struct SelectionProfile
-    {
-        std::string specifier_;   // String that specifies what selction profile to use.
-        std::map<std::string,             float  > calculatedValues_;
-        std::map<std::string, std::vector<float> > calculatedArrays_;
-          // Values calculated on the fly. Second list contains arrays of variables. One set of variables for each selection profile stored.
-        ConfigPtr cfg_;            // Configuration files containing selection information.
-        bool selectionSatisfied_;  // Result of evaluation of each selection profile. Reset, checked every time process is called.
-        SelectionProfile(const std::string& spec)
-          : specifier_(spec),
-            cfg_(cfgLocator_.getConfig(std::string("ZCLibrary/config/selection/")+spec+".ini"))
-        {}
-    };
     std::map<std::string, SelectionProfile*> selectionProfiles_;   // Structs stored by specifier
 
 };

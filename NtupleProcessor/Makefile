@@ -25,7 +25,7 @@ SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 ROOTFLAGS :=`root-config --cflags --glibs`
 BOOSTLIB := -lboost_program_options
-CFLAGS := -g -Wall -std=c++11 $(BOOSTLIB) $(ROOTFLAGS)
+CFLAGS := -g -Wall -std=c++11 -fdiagnostics-color $(BOOSTLIB) $(ROOTFLAGS)
 INC := -I $(HDRDIR) -I $(UTILDIR)/$(HDRDIR) -I $(SUBMODDIR)/spdlog/include/
 # INC := -I $(HDRDIR) -I $(SUBMODDIR)/spdlog/include/
 

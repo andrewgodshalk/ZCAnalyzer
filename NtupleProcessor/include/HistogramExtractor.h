@@ -44,7 +44,7 @@ class HistogramExtractor {
   protected:
     NtupleInfo* currentNtupleInfo_;
 
-    EventHandler* evt_;         // Contains event information (selection profile, mapped variables, etc.)
+    EventHandler* evt_;      // Contains event information (selection profile, mapped variables, etc.)
     RootHandler*  rh_;       // Manages output file where histograms are stored.
 
     // Configuration

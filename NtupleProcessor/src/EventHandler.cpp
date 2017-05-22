@@ -65,8 +65,18 @@ void EventHandler::evaluateEvent()
   // Reset working variables.
     resetEventVariables();
 
-  // Set up event weight based on sign from generation, or just set = 1.0.
-  // if(currentNtupleInfo_->get<string>("data_or_sim") == "sim")
+  // Evalute event!
+    applyGenWeight();   // Modify weight appropriately based on simulation values.
+    evaluateLumiJSON(); // Check if event falls within good luminosity section.
+  // Create a list of leptons that meet the criteria in file.
+  // Evaluate Z-boson selection.
+  // Evaluate trigger.
+
+
+}
+
+void EventHandler::applyGenWeight()
+{ // Set up event weight based on sign from generation, or just set = 1.0.
     if(currentNtupleInfo_->isSim)
         for( auto& sp : selectionProfiles_ )
         {     sp.second->calculatedValues_["genSign"    ]
@@ -74,12 +84,11 @@ void EventHandler::evaluateEvent()
             = (get("genWeight") < 0 ? -1 : 1);
         }
     else for( auto& sp : selectionProfiles_ ) sp.second->calculatedValues_["eventWeight"] = 1.0;
-
 }
 
 void EventHandler::evaluateLumiJSON()
 { // Check if event falls within "good" luminosity sections.
-
+    
 }
 
 void EventHandler::resetEventVariables()
@@ -89,6 +98,7 @@ void EventHandler::resetEventVariables()
     {
         for(auto& kv : sp.second->calculatedValues_ ) kv.second = 0;
         for(auto& kv : sp.second->calculatedArrays_ ) kv.second.clear();
-        sp.second->selectionSatisfied_ = false;
+        for(auto& kv : sp.second->lepLists_         ) kv.second.clear();
+        sp.second->selectionSatisfied_ = true;
     }
 }
